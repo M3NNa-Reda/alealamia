@@ -1,5 +1,5 @@
+using alealamia.Infrastructure.Identity.Entities;
 using alealamia.Infrastructure.Persistence.Context;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +16,27 @@ namespace EasyShop.API
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("ConnectionString")));
 
+
+            //builder.Services
+            //    .AddIdentityCore<ApplicationUser>(options =>
+            //    {
+            //        options.User.RequireUniqueEmail = true;
+
+            //        options.Password.RequiredLength = 8;
+            //        options.Password.RequireDigit = true;
+            //        options.Password.RequireUppercase = true;
+            //        options.Password.RequireLowercase = true;
+            //        options.Password.RequireNonAlphanumeric = false;
+
+            //        options.Lockout.AllowedForNewUsers = true;
+            //        options.Lockout.MaxFailedAccessAttempts = 5;
+            //        options.Lockout.DefaultLockoutTimeSpan =
+            //            TimeSpan.FromMinutes(5);
+            //    })
+            //    .AddRoles<IdentityRole>()
+            //    .AddEntityFrameworkStores<ApplicationDbContext>()
+            //    .AddDefaultTokenProviders()
+            //    .AddSignInManager();
 
             builder.Services.AddEndpointsApiExplorer();
             //builder.Services.AddSwaggerGen();

@@ -11,8 +11,8 @@ namespace alealamia.Domain.Entities
         public int SkillId { get; set; } //pk,fk
         public ProficiencyLevel ProficiencyLevel { get; set; }
         public DateTime AddedAt { get; set; } = DateTime.UtcNow;
-        public FreelancerProfile FreelancerProfile { get; set; }
-        public Skill Skill { get; set; }
+        public FreelancerProfile FreelancerProfile { get; set; } = null!;
+        public Skill Skill { get; set; } = null!;
 
     }
 }

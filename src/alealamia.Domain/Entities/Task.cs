@@ -16,8 +16,10 @@ namespace alealamia.Domain.Entities
         public DateTime PublishedDeadline { get; set; }
         public DateTime? ExtensionDeadline { get; set; }
         public int? AssignedFreelancerId { get; set; } //fk
-        public string CreatedByUserId { get; set; } = string.Empty; //fk
+        public string CreatedByUserId { get; set; } = string.Empty; //fk admin
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public ICollection<FreelancerBlock> FreelancerBlocks { get; set; } = new HashSet<FreelancerBlock>();
+
     }
 }

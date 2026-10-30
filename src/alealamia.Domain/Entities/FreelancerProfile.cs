@@ -15,5 +15,13 @@ namespace alealamia.Domain.Entities
         public string? ProfileImageUrl { get; set; }
         public FreelancerApprovalStatus ApprovalStatus { get; set; }
         public bool IsAvailable { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
+        public Track Track { get; set; } = null!;
+        public ICollection<FreelancerBlock> FreelancerBlocks { get; set; } = new List<FreelancerBlock>();
+        public ICollection<FreelancerSkill> FreelancerSkills { get; set; } = new List<FreelancerSkill>();
+        public ICollection<PortfolioItem> PortfolioItems { get; set; } = new List<PortfolioItem>();
+
+
     }
 }

@@ -8,7 +8,7 @@ namespace alealamia.Domain.Entities
     {
         public int TrackId { get; set; } //pk,fk
         public int SkillId { get; set; } //pk,fk
-        public Track Track { get; set; }
-        public Skill Skill { get; set; }
+        public Track Track { get; set; } = null!;
+        public Skill Skill { get; set; } = null!;
     }
 }
