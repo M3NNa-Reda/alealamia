@@ -12,6 +12,7 @@ namespace alealamia.Domain.Entities
         public string? BusinessName { get; set; } 
         public string? BusinessType { get; set; } 
         public string? WebsiteUrl { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     }
 }

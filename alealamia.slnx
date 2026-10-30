@@ -4,6 +4,5 @@
     <Project Path="src/alealamia.Application/alealamia.Application.csproj" />
     <Project Path="src/alealamia.Domain/alealamia.Domain.csproj" />
     <Project Path="src/alealamia.Infrastructure/alealamia.Infrastructure.csproj" />
-    <Project Path="src/alealamia.MVC/alealamia.MVC.csproj" />
   </Folder>
 </Solution>

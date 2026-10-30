@@ -11,8 +11,11 @@ namespace alealamia.Domain.Entities
         public int? TaskId { get; set; } //FK
         public DateTime StartedAt { get; set; }
         public DateTime EndsAt { get; set; }
-        public string CreatedByUserId { get; set; } = string.Empty;//FK
+        public string CreatedByUserId { get; set; } = string.Empty;//FK Admin
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public FreelancerProfile FreelancerProfile { get; set; } = null!;
+        public Task? Task { get; set; }
+
 
 
 

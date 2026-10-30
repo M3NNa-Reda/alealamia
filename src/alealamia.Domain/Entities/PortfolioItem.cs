@@ -14,6 +14,8 @@ namespace alealamia.Domain.Entities
         public bool IsPublished { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
+        public FreelancerProfile FreelancerProfile { get; set; } = null!;
+        public ICollection<PortfolioItemFile> PortfolioItemFiles { get; set; } = new List<PortfolioItemFile>();
 
 
     }
