@@ -8,6 +8,7 @@ namespace alealamia.Domain.Entities
     {
         public int TaskSubmissionId { get; set; } // pk , fk
         public int FileId { get; set; } // pk , fk
-        public DateTime UploadedAt { get; set; } 
+        public DateTime UploadedAt { get; set; }
+        public File File { get; set; } = null!;
     }
 }

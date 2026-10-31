@@ -10,6 +10,6 @@ namespace alealamia.Domain.Entities
         public int FileId { get; set; } //pk,fk
         public int DisplayOrder { get; set; }
         public PortfolioItem PortfolioItem { get; set; } = null!;
-        //public File File { get; set; } nav prop
+        public File File { get; set; } = null!;
     }
 }
