@@ -5,4 +5,7 @@
     <Project Path="src/alealamia.Domain/alealamia.Domain.csproj" />
     <Project Path="src/alealamia.Infrastructure/alealamia.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/alealamia.Application.Tests/alealamia.Application.Tests.csproj" />
+  </Folder>
 </Solution>
