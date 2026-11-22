@@ -18,6 +18,7 @@ public class TaskOfferDetailsDto : TaskOfferDto
 {
     public string TaskTitle { get; set; } = string.Empty;
     public string TaskDescription { get; set; } = string.Empty;
+    public decimal TaskRewardAmount { get; set; }
     public int TaskTrackId { get; set; }
     public TaskStatus TaskStatus { get; set; }
     public DateTime TaskPublishedDeadline { get; set; }

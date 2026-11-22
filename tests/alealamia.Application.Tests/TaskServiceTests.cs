@@ -58,6 +58,7 @@ public class TaskServiceTests
         TrackId = 3,
         Title = "  Design the landing page  ",
         Description = "Create the landing page layout.",
+        RewardAmount = 1500.50m,
         PublishedDeadline = TestData.Now.AddDays(7),
         RequiredSkillIds = new List<int> { 1, 2 },
         CreatedByUserId = "admin-1"
@@ -76,8 +77,10 @@ public class TaskServiceTests
 
         Assert.Equal(TaskStatus.Draft, result.Status);
         Assert.Equal("Design the landing page", result.Title);
+        Assert.Equal(1500.50m, result.RewardAmount);
         await _tasks.Received(1).AddAsync(Arg.Is<TaskEntity>(t =>
             t.Status == TaskStatus.Draft
+            && t.RewardAmount == 1500.50m
             && t.TaskRequiredSkills.Count == 2
             && t.TaskStatusHistories.Count == 1
             && t.CreatedAt == TestData.Now));
@@ -149,6 +152,42 @@ public class TaskServiceTests
         await Assert.ThrowsAsync<ArgumentException>(() => _service.CreateAsync(dto));
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-5)]
+    [InlineData(10.555)]
+    public async Task Create_Throws_WhenTheRewardAmountIsInvalid(double rewardAmount)
+    {
+        var dto = NewCreateDto();
+        dto.RewardAmount = (decimal)rewardAmount;
+
+        await Assert.ThrowsAsync<ArgumentException>(() => _service.CreateAsync(dto));
+        await _tasks.DidNotReceive().AddAsync(Arg.Any<TaskEntity>());
+    }
+
+    [Fact]
+    public async Task Create_Throws_WhenTheRewardAmountExceedsTheMaximum()
+    {
+        var dto = NewCreateDto();
+        dto.RewardAmount = alealamia.Domain.Constants.TaskRules.MaxRewardAmount + 1;
+
+        await Assert.ThrowsAsync<ArgumentException>(() => _service.CreateAsync(dto));
+    }
+
+    [Fact]
+    public async Task Update_Throws_WhenTheRewardAmountIsInvalid()
+    {
+        _tasks.GetByIdAsync(1).Returns(TestData.NewTask(status: TaskStatus.Draft));
+
+        await Assert.ThrowsAsync<ArgumentException>(() => _service.UpdateAsync(1, new UpdateTaskDto
+        {
+            Title = "Title",
+            Description = "Description",
+            RewardAmount = 0,
+            PublishedDeadline = TestData.Now.AddDays(2)
+        }));
+    }
+
     [Fact]
     public async Task Update_Throws_WhenTheTaskIsNotADraft()
     {
@@ -158,6 +197,7 @@ public class TaskServiceTests
         {
             Title = "Title",
             Description = "Description",
+            RewardAmount = 100m,
             PublishedDeadline = TestData.Now.AddDays(2)
         }));
     }
@@ -172,10 +212,12 @@ public class TaskServiceTests
         {
             Title = "New title",
             Description = "New description",
+            RewardAmount = 2750.25m,
             PublishedDeadline = TestData.Now.AddDays(2)
         });
 
         Assert.Equal("New title", result.Title);
+        Assert.Equal(2750.25m, result.RewardAmount);
         Assert.Equal(TestData.Now, result.UpdatedAt);
         await _unitOfWork.Received(1).CompleteAsync();
     }
