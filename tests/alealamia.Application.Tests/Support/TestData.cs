@@ -24,6 +24,7 @@ internal static class TestData
             TrackId = trackId,
             Title = "Design the landing page",
             Description = "Create the landing page layout.",
+            RewardAmount = 1500m,
             Status = status,
             PublishedDeadline = deadline ?? Now.AddDays(5),
             ExtensionDeadline = extension,

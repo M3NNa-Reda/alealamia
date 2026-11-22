@@ -1,12 +1,14 @@
 ﻿using alealamia.Application.Interfaces.Repositories;
 using alealamia.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace alealamia.Infrastructure.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext _context;
+        private readonly IServiceProvider _serviceProvider;
         private IDbContextTransaction? _transaction;
         public ITaskSubmissionRepository TaskSubmissionRepository { get; private set; }
         public ITaskReviewRepository TaskReviewRepository { get; private set; }
@@ -18,7 +20,8 @@ namespace alealamia.Infrastructure.Repositories
         public ISupportMessageRepository SupportMessageRepository { get; private set; }
         public ISupportMessageFileRepository SupportMessageFileRepository { get; private set; }
 
-        public UnitOfWork(ApplicationDbContext context
+        public UnitOfWork(ApplicationDbContext context,
+             IServiceProvider serviceProvider
             , ITaskSubmissionRepository taskSubmissionRepository
             , ITaskReviewRepository taskReviewRepository
             , ITaskRevisionRepository taskRevisionRepository
@@ -31,6 +34,7 @@ namespace alealamia.Infrastructure.Repositories
             )
         {
             _context = context;
+            _serviceProvider = serviceProvider;
             TaskSubmissionRepository = taskSubmissionRepository;
             TaskReviewRepository = taskReviewRepository;
             TaskRevisionRepository = taskRevisionRepository;
@@ -40,6 +44,11 @@ namespace alealamia.Infrastructure.Repositories
             SupportTicketRepository = supportTicketRepository;
             SupportMessageRepository = supportMessageRepository;
             SupportMessageFileRepository = supportMessageFileRepository;
+        
+
+        public IGenericRepository<T> Repository<T>() where T : class
+        {
+            return _serviceProvider.GetRequiredService<IGenericRepository<T>>();
         }
 
         public async Task<int> CompleteAsync()

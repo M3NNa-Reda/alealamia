@@ -100,6 +100,7 @@ public sealed class SqlServerDatabaseFixture : IAsyncLifetime
             TrackId = track.Id,
             Title = "Contested task",
             Description = "Every freelancer receives an offer for this task.",
+            RewardAmount = 1500m,
             Status = TaskStatus.Published,
             PublishedDeadline = now.AddDays(5),
             CreatedByUserId = admin.Id,

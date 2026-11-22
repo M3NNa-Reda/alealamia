@@ -10,6 +10,7 @@ public class TaskDto
     public int TrackId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public decimal RewardAmount { get; set; }
     public TaskStatus Status { get; set; }
     public int? ActualDurationDays { get; set; }
     public DateTime PublishedDeadline { get; set; }
@@ -35,6 +36,7 @@ public class CreateTaskDto
     public int TrackId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public decimal RewardAmount { get; set; }
     public DateTime PublishedDeadline { get; set; }
     public List<int> RequiredSkillIds { get; set; } = new();
     public string CreatedByUserId { get; set; } = string.Empty;
@@ -44,6 +46,7 @@ public class UpdateTaskDto
 {
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public decimal RewardAmount { get; set; }
     public DateTime PublishedDeadline { get; set; }
 }
 
