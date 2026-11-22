@@ -7,5 +7,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/alealamia.Application.Tests/alealamia.Application.Tests.csproj" />
+    <Project Path="tests/alealamia.Integration.Tests/alealamia.Integration.Tests.csproj" />
   </Folder>
 </Solution>
