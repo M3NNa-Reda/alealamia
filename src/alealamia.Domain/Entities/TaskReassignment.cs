@@ -12,7 +12,7 @@ namespace alealamia.Domain.Entities
         public int? NewFreelancerId { get; set; } //fk
         public string Reason { get; set; } = string.Empty;
         public string ReassignedByUserId { get; set; } = string.Empty; //fk
-        public DateTime ReassignedAt { get; set; }
+        public DateTime ReassignedAt { get; set; } = DateTime.UtcNow;
         public Task Task { get; set; } = null!;
         public FreelancerProfile? PreviousFreelancer { get; set; }
         public FreelancerProfile? NewFreelancer { get; set; }

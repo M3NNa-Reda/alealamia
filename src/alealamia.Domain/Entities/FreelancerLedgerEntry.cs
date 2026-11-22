@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace alealamia.Domain.Entities
+﻿namespace alealamia.Domain.Entities
 {
     public class FreelancerLedgerEntry
     {
@@ -12,7 +8,7 @@ namespace alealamia.Domain.Entities
         public LedgerEntryType EntryType { get; set; } 
         public decimal Amount { get; set; }
         public string Reason { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string? CreatedByUserId { get; set; }
         public FreelancerProfile FreelancerProfile { get; set; } = null!;
         public Task? Task { get; set; }

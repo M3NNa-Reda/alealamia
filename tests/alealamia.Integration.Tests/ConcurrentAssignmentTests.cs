@@ -114,7 +114,19 @@ public class ConcurrentAssignmentTests : IClassFixture<SqlServerDatabaseFixture>
             offers,
             TimeProvider.System);
 
-        return new TaskAssignmentService(tasks, offers, history, eligibility, new UnitOfWork(context), TimeProvider.System);
+        var unitOfWork = new UnitOfWork(
+            context,
+            new TaskSubmissionRepository(context),
+            new TaskReviewRepository(context),
+            new TaskRevisionRepository(context),
+            new SubmissionFileRepository(context),
+            new FreelancerLedgerEntryRepository(context),
+            new FileRepository(context),
+            new SupportTicketRepository(context),
+            new SupportMessageRepository(context),
+            new SupportMessageFileRepository(context));
+
+        return new TaskAssignmentService(tasks, offers, history, eligibility, unitOfWork, TimeProvider.System);
     }
 
     private sealed record Outcomes(int Winners, int Conflicts, IReadOnlyList<string> Unexpected);
