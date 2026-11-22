@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  
+
   <ItemGroup>
     <ProjectReference Include="..\alealamia.Domain\alealamia.Domain.csproj" />
   </ItemGroup>
