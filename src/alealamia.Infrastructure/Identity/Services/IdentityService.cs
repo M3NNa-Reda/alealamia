@@ -66,7 +66,15 @@ namespace alealamia.Infrastructure.Identity
             };
         }
 
+        public async Task<bool> IsActiveAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
 
+            if (user == null)
+                return false;
+
+            return user.IsActive;
+        }
         public async Task<IList<string>> GetUserRolesAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);

@@ -1,9 +1,10 @@
-using alealamia.Application.Common.Options;
+using alealamia.Infrastructure.Common.Options;
 using alealamia.Application.Interfaces.Services;
 using alealamia.Application.Services;
 using alealamia.Infrastructure;
 using alealamia.Infrastructure.Identity.Entities;
 using alealamia.Infrastructure.Persistence.Context;
+using alealamia.Infrastructure.Seeders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,19 @@ namespace EasyShop.API
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+
+                var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+                var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+                var configuration = services.GetRequiredService<IConfiguration>();
+
+                await RoleSeeder.SeedAsync(
+                    roleManager,
+                    userManager,
+                    configuration);
+            }
             app.UseExceptionHandler("/error");
             //catches exceptions thrown in the following middlewares so it must come early
             if (app.Environment.IsDevelopment())
