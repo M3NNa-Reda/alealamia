@@ -8,10 +8,38 @@ namespace alealamia.Infrastructure.Repositories
     {
         private readonly ApplicationDbContext _context;
         private IDbContextTransaction? _transaction;
+        public ITaskSubmissionRepository TaskSubmissionRepository { get; private set; }
+        public ITaskReviewRepository TaskReviewRepository { get; private set; }
+        public ITaskRevisionRepository TaskRevisionRepository { get; private set; }
+        public ISubmissionFileRepository SubmissionFileRepository { get; private set; }
+        public IFreelancerLedgerEntryRepository FreelancerLedgerEntryRepository { get; private set; }
+        public IFileRepository FileRepository { get; private set; }
+        public ISupportTicketRepository SupportTicketRepository { get; private set; }
+        public ISupportMessageRepository SupportMessageRepository { get; private set; }
+        public ISupportMessageFileRepository SupportMessageFileRepository { get; private set; }
 
-        public UnitOfWork(ApplicationDbContext context)
+        public UnitOfWork(ApplicationDbContext context
+            , ITaskSubmissionRepository taskSubmissionRepository
+            , ITaskReviewRepository taskReviewRepository
+            , ITaskRevisionRepository taskRevisionRepository
+            , ISubmissionFileRepository submissionFileRepository
+            , IFreelancerLedgerEntryRepository freelancerLedgerEntryRepository
+            , IFileRepository fileRepository
+            , ISupportTicketRepository supportTicketRepository
+            , ISupportMessageRepository supportMessageRepository
+            , ISupportMessageFileRepository supportMessageFileRepository
+            )
         {
             _context = context;
+            TaskSubmissionRepository = taskSubmissionRepository;
+            TaskReviewRepository = taskReviewRepository;
+            TaskRevisionRepository = taskRevisionRepository;
+            FreelancerLedgerEntryRepository = freelancerLedgerEntryRepository;
+            FileRepository = fileRepository;
+            SubmissionFileRepository = submissionFileRepository;
+            SupportTicketRepository = supportTicketRepository;
+            SupportMessageRepository = supportMessageRepository;
+            SupportMessageFileRepository = supportMessageFileRepository;
         }
 
         public async Task<int> CompleteAsync()

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace alealamia.Domain.Entities
 {
     public class TaskSubmission
@@ -10,7 +7,7 @@ namespace alealamia.Domain.Entities
         public int TaskId { get; set; } //fk
         public int FreelancerProfileId { get; set; } //fk
         public string? SubmissionNotes { get; set; } 
-        public DateTime SubmittedAt { get; set; }
+        public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
         public SubmissionStatus Status { get; set; }
 
         public Task Task { get; set; } = null!;

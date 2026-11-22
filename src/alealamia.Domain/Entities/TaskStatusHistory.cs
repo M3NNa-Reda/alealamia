@@ -13,7 +13,7 @@ namespace alealamia.Domain.Entities
         public TaskStatus NewStatus { get; set; }
         public string ChangedByUserId { get; set; } = string.Empty;
         public string? Notes { get; set; }
-        public DateTime ChangedAt { get; set; }
+        public DateTime ChangedAt { get; set; } = DateTime.UtcNow;
         public Task Task { get; set; } = null!;
 
     }

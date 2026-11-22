@@ -8,7 +8,7 @@ namespace alealamia.Domain.Entities
     {
         public int TaskId { get; set; } // pk , fk
         public int FileId { get; set; } // pk , fk
-        public DateTime AddedAt { get; set; }
+        public DateTime AddedAt { get; set; } = DateTime.UtcNow;
         public File File { get; set; } = null!;
         public Task Task { get; set; } = null!;
     }

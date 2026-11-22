@@ -18,6 +18,7 @@ public class TaskRepository : GenericRepository<TaskEntity>, ITaskRepository
     public async Task<TaskEntity?> GetDetailsByIdAsync(int id)
     {
         return await _context.Tasks.AsNoTracking()
+            .Include(t => t.Project)
             .Include(t => t.TaskRequiredSkills).ThenInclude(s => s.Skill)
             .Include(t => t.TaskFiles).ThenInclude(f => f.File)
             .Include(t => t.TaskStatusHistories)
