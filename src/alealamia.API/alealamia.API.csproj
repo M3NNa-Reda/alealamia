@@ -17,10 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\alealamia.Application\alealamia.Application.csproj" />
     <ProjectReference Include="..\alealamia.Infrastructure\alealamia.Infrastructure.csproj" />
   </ItemGroup>

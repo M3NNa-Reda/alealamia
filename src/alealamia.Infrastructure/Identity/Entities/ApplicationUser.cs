@@ -13,8 +13,8 @@ namespace alealamia.Infrastructure.Identity.Entities
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
-        public ClientProfile ClientProfile { get; set; } = null!;
-        public FreelancerProfile FreelancerProfile { get; set; } = null!;
+        public ClientProfile? ClientProfile { get; set; }
+        public FreelancerProfile? FreelancerProfile { get; set; }
         public ICollection<FreelancerBlock> FreelancerBlocks { get; set; } = new List<FreelancerBlock>();
         public ICollection<TaskReview> TaskReviews { get; set; } = new List<TaskReview>();
         public ICollection<FreelancerLedgerEntry> FreelancerLedgerEntries { get; set; } = new List<FreelancerLedgerEntry>();
