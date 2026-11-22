@@ -106,6 +106,7 @@ public class TaskService : ITaskService
         var now = Now();
 
         ValidateContent(dto.Title, dto.Description);
+        ValidateRewardAmount(dto.RewardAmount);
         if (string.IsNullOrWhiteSpace(dto.CreatedByUserId))
             throw new ArgumentException("CreatedByUserId is required.");
         if (dto.PublishedDeadline <= now)
@@ -131,6 +132,7 @@ public class TaskService : ITaskService
             TrackId = dto.TrackId,
             Title = dto.Title.Trim(),
             Description = dto.Description.Trim(),
+            RewardAmount = dto.RewardAmount,
             Status = TaskStatus.Draft,
             PublishedDeadline = dto.PublishedDeadline,
             CreatedByUserId = dto.CreatedByUserId,
@@ -163,11 +165,13 @@ public class TaskService : ITaskService
             throw new InvalidOperationException("Only a draft task can be edited.");
 
         ValidateContent(dto.Title, dto.Description);
+        ValidateRewardAmount(dto.RewardAmount);
         if (dto.PublishedDeadline <= Now())
             throw new ArgumentException("The deadline must be in the future.");
 
         task.Title = dto.Title.Trim();
         task.Description = dto.Description.Trim();
+        task.RewardAmount = dto.RewardAmount;
         task.PublishedDeadline = dto.PublishedDeadline;
         task.UpdatedAt = Now();
 
@@ -335,6 +339,16 @@ public class TaskService : ITaskService
             throw new ArgumentException($"Task title cannot exceed {TaskRules.TitleMaxLength} characters.");
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Task description is required.");
+    }
+
+    private static void ValidateRewardAmount(decimal rewardAmount)
+    {
+        if (rewardAmount <= 0)
+            throw new ArgumentException("Task reward amount must be greater than zero.");
+        if (rewardAmount > TaskRules.MaxRewardAmount)
+            throw new ArgumentException("Task reward amount is too large.");
+        if (decimal.Round(rewardAmount, 2) != rewardAmount)
+            throw new ArgumentException("Task reward amount cannot have more than two decimal places.");
     }
 
     private DateTime Now() => _timeProvider.GetUtcNow().UtcDateTime;

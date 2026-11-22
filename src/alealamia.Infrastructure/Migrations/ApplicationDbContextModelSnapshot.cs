@@ -1070,6 +1070,10 @@ namespace alealamia.Infrastructure.Migrations
                     b.Property<DateTime>("PublishedDeadline")
                         .HasColumnType("datetime2");
 
+                    b.Property<decimal>("RewardAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 

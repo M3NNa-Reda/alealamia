@@ -78,6 +78,7 @@ internal static class TaskMappings
         RespondedAt = offer.RespondedAt,
         TaskTitle = offer.Task?.Title ?? string.Empty,
         TaskDescription = offer.Task?.Description ?? string.Empty,
+        TaskRewardAmount = offer.Task?.RewardAmount ?? 0,
         TaskTrackId = offer.Task?.TrackId ?? 0,
         TaskStatus = offer.Task?.Status ?? TaskStatus.Draft,
         TaskPublishedDeadline = offer.Task?.PublishedDeadline ?? default
@@ -119,6 +120,7 @@ internal static class TaskMappings
         dto.TrackId = task.TrackId;
         dto.Title = task.Title;
         dto.Description = task.Description;
+        dto.RewardAmount = task.RewardAmount;
         dto.Status = task.Status;
         dto.ActualDurationDays = task.ActualDurationDays;
         dto.PublishedDeadline = task.PublishedDeadline;

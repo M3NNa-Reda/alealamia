@@ -18,6 +18,10 @@ namespace alealamia.Infrastructure.Configurations
             builder.Property(x => x.Description)
                 .IsRequired();
 
+            builder.Property(x => x.RewardAmount)
+                .IsRequired()
+                .HasPrecision(18, 2);
+
             builder.Property(x => x.Status)
                 .IsRequired()
                 .HasConversion<int>();
