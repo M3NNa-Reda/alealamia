@@ -21,7 +21,7 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<ApplicationDbContext>(options =>
-             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+             options.UseSqlServer(configuration.GetConnectionString("ConnectionString")));
         var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>();
         services.AddScoped<IJwtService, JwtService>();
 
