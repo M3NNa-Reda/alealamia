@@ -20,6 +20,7 @@ namespace alealamia.Domain.Entities
         public string CreatedByUserId { get; set; } = string.Empty; //fk admin
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
+        public decimal Price { get; set; }
         public ICollection<FreelancerBlock> FreelancerBlocks { get; set; } = new HashSet<FreelancerBlock>();
         public ICollection<TaskRevision> TaskRevisions { get; set; } = new List<TaskRevision>();
         public ICollection<TaskSubmission> TaskSubmissions { get; set; } = new List<TaskSubmission>();
