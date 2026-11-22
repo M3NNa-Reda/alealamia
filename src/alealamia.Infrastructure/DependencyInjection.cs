@@ -1,4 +1,4 @@
-﻿using alealamia.Application.Common.Options;
+﻿using alealamia.Infrastructure.Common.Options;
 using alealamia.Application.Interfaces.Repositories;
 using alealamia.Application.Interfaces.Services;
 using alealamia.Infrastructure.Authentication;
@@ -22,7 +22,11 @@ public static class DependencyInjection
     {
         services.AddDbContext<ApplicationDbContext>(options =>
              options.UseSqlServer(configuration.GetConnectionString("ConnectionString")));
-        var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>();
+        var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>()
+             ?? throw new InvalidOperationException("Jwt configuration section is missing or invalid.");
+
+        services.AddSingleton(jwtOptions);
+
         services.AddScoped<IJwtService, JwtService>();
 
         // add authentication schema + how to validate token

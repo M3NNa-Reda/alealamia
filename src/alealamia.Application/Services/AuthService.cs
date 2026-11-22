@@ -184,9 +184,54 @@ namespace alealamia.Application.Services
             };
         }
 
-        public Task<AuthResultDto> LoginAsync(LoginRequestDto dto)
+        public async Task<AuthResultDto> LoginAsync(LoginRequestDto dto)
         {
-            throw new NotImplementedException();
+            var user = await _identityService.GetUserByEmailAsync(dto.Email);
+
+            if (user == null)
+            {
+                return Failed(new[]
+                { "Invalid email or password."});
+            }
+
+            var isActive = await _identityService.IsActiveAsync(user.Id);
+
+            if (!isActive)
+            {
+                return Failed(new[]
+                {"Your account is inactive."});
+            }
+
+            var passwordValid = await _identityService.CheckPasswordAsync(
+                dto.Email,
+                dto.Password);
+
+            if (!passwordValid)
+            {
+                return Failed(new[]
+                {"Invalid email or password."});
+            }
+
+            var roles = await _identityService.GetUserRolesAsync(user.Id);
+
+            var token = await _jwtService.GenerateTokenAsync(user, roles);
+
+            return new AuthResultDto
+            {
+                Succeeded = true,
+                Data = new AuthResponseDto
+                {
+                    Token = token.Token,
+                    Expiration = token.Expiration,
+                    User = new UserDto
+                    {
+                        UserId = user.Id,
+                        FullName = user.FullName ?? string.Empty,
+                        Email = user.Email,
+                        Roles = roles
+                    }
+                }
+            };
         }
     }
 }

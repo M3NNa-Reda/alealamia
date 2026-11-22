@@ -1,4 +1,4 @@
-﻿using alealamia.Application.Common.Options;
+﻿using alealamia.Infrastructure.Common.Options;
 using alealamia.Application.DTOs.Auth;
 using alealamia.Application.DTOs.Identity;
 using alealamia.Application.Interfaces.Services;
@@ -14,9 +14,9 @@ namespace alealamia.Infrastructure.Authentication
     {
         private readonly JwtOptions _jwtOptions;
 
-        public JwtService(IOptions<JwtOptions> jwtOptions)
+        public JwtService(JwtOptions jwtOptions)
         {
-            _jwtOptions = jwtOptions.Value;
+            _jwtOptions = jwtOptions;
         }
 
         public Task<TokenDto> GenerateTokenAsync(ApplicationUserDto user,IList<string> roles)

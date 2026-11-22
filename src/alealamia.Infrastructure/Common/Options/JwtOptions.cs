@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace alealamia.Application.Common.Options
+namespace alealamia.Infrastructure.Common.Options
 {
     public class JwtOptions
     {
