@@ -11,6 +11,7 @@
         ISupportTicketRepository SupportTicketRepository { get; }
         ISupportMessageRepository SupportMessageRepository { get; }
         ISupportMessageFileRepository SupportMessageFileRepository { get; }
+        IFreelancerProfileRepository FreelancerProfiles { get; }
         
         IGenericRepository<T> Repository<T>() where T : class;
         Task<int> CompleteAsync();

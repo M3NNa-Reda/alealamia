@@ -14,6 +14,7 @@ namespace alealamia.Application.Interfaces.Services
         Task<bool> CheckPasswordAsync(string email, string password);
         Task<IdentityResultDto> CreateUserAsync(CreateUserDto userDto);
         Task<bool> IsActiveAsync(string userId);
+        Task<IdentityResultDto> UpdateUserNameAsync(string userId, UpdateUserNameDto dto);
 
         // Roles
         Task<IList<string>> GetUserRolesAsync(string userId);

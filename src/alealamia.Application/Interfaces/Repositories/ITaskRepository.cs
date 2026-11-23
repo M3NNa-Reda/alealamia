@@ -21,4 +21,5 @@ public interface ITaskRepository : IGenericRepository<TaskEntity>
     Task<bool> TryChangeStatusAsync(int taskId, TaskStatus expectedStatus, TaskStatus newStatus, DateTime utcNow);
     Task<bool> TryAssignAsync(int taskId, int freelancerProfileId, DateTime utcNow);
     Task<bool> TryReassignAsync(int taskId, int previousFreelancerProfileId, int? newFreelancerProfileId, TaskStatus resultingStatus, DateTime utcNow);
+    Task<bool> HasActiveTasksAsync(int freelancerProfileId);
 }

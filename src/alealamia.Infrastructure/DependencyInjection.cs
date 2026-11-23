@@ -73,6 +73,7 @@ public static class DependencyInjection
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
         services.AddScoped<IFreelancerProfileRepository, FreelancerProfileRepository>();
+        services.AddScoped<IFreelancerBlockRepository, FreelancerBlockRepository>();
         services.AddScoped<IIdentityService, IdentityService>();
 
         return services;

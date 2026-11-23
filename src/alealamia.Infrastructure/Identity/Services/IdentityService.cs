@@ -75,6 +75,42 @@ namespace alealamia.Infrastructure.Identity
 
             return user.IsActive;
         }
+        public async Task<IdentityResultDto> UpdateUserNameAsync(string userId, UpdateUserNameDto dto)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return new IdentityResultDto
+                {
+                    Succeeded = false,
+                    Errors = new List<string> { "User does not exist." }
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.FirstName) ||
+                string.IsNullOrWhiteSpace(dto.LastName))
+            {
+                return new IdentityResultDto
+                {
+                    Succeeded = false,
+                    Errors = new List<string> { "First name and last name are required." }
+                };
+            }
+
+            user.FirstName = dto.FirstName.Trim();
+            user.LastName = dto.LastName.Trim();
+            user.UpdatedAt = DateTime.UtcNow;
+
+            var result = await _userManager.UpdateAsync(user);
+
+            return new IdentityResultDto
+            {
+                Succeeded = result.Succeeded,
+                UserId = result.Succeeded ? user.Id : null,
+                Errors = result.Errors.Select(e => e.Description).ToList()
+            };
+        }
         public async Task<IList<string>> GetUserRolesAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -145,6 +181,8 @@ namespace alealamia.Infrastructure.Identity
                 Email = user.Email ?? string.Empty,
                 UserName = user.UserName ?? string.Empty,
                 FullName = string.Concat(user.FirstName, " ", user.LastName),
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 EmailConfirmed = user.EmailConfirmed
             };
         }

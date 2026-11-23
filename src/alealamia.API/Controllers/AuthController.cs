@@ -15,21 +15,11 @@ namespace alealamia.API.Controllers
         {
             _authService = authService;
         }
-        [HttpPost("register/client")]
-        public async Task<IActionResult> RegisterClient(RegisterClientRequestDto dto)
+       
+        [HttpPost("register")]
+        public async Task<IActionResult> RegisterFreelancer(RegisterRequestDto dto)
         {
-            var result = await _authService.RegisterClientAsync(dto);
-
-            if (!result.Succeeded)
-                return BadRequest(result);
-
-            return Ok(result);
-        }
-
-        [HttpPost("register/freelancer")]
-        public async Task<IActionResult> RegisterFreelancer(RegisterFreelancerRequestDto dto)
-        {
-            var result = await _authService.RegisterFreelancerAsync(dto);
+            var result = await _authService.RegisterAsync(dto);
 
             if (!result.Succeeded)
                 return BadRequest(result);

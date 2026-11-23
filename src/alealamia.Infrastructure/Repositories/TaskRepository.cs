@@ -137,4 +137,12 @@ public class TaskRepository : GenericRepository<TaskEntity>, ITaskRepository
 
         return affected == 1;
     }
+    public async Task<bool> HasActiveTasksAsync(int freelancerProfileId)
+    {
+        return await _context.Tasks
+            .AnyAsync(t =>
+                t.AssignedFreelancerId == freelancerProfileId &&
+                (t.Status == TaskStatus.Assigned ||
+                 t.Status == TaskStatus.RevisionRequested));
+    }
 }
