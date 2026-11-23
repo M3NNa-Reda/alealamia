@@ -72,6 +72,16 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
+        services.AddScoped<ITaskSubmissionRepository, TaskSubmissionRepository>();
+        services.AddScoped<ITaskReviewRepository, TaskReviewRepository>();
+        services.AddScoped<ITaskRevisionRepository, TaskRevisionRepository>();
+        services.AddScoped<ISubmissionFileRepository, SubmissionFileRepository>();
+        services.AddScoped<IFreelancerLedgerEntryRepository, FreelancerLedgerEntryRepository>();
+        services.AddScoped<IFileRepository, FileRepository>();
+        services.AddScoped<ISupportTicketRepository, SupportTicketRepository>();
+        services.AddScoped<ISupportMessageRepository, SupportMessageRepository>();
+        services.AddScoped<ISupportMessageFileRepository, SupportMessageFileRepository>();
+
         services.AddScoped<IFreelancerProfileRepository, FreelancerProfileRepository>();
         services.AddScoped<IIdentityService, IdentityService>();
 

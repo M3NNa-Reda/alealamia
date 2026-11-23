@@ -44,8 +44,8 @@ namespace alealamia.Infrastructure.Repositories
             SupportTicketRepository = supportTicketRepository;
             SupportMessageRepository = supportMessageRepository;
             SupportMessageFileRepository = supportMessageFileRepository;
-        
 
+        }
         public IGenericRepository<T> Repository<T>() where T : class
         {
             return _serviceProvider.GetRequiredService<IGenericRepository<T>>();
