@@ -8,7 +8,7 @@ namespace alealamia.Application.Interfaces.Services
         Task<ResultDto> CompleteProfileAsync(string userId, CompleteFreelancerProfileDto dto);
         Task<ResultDto> UpdateProfileAsync(string userId, UpdateFreelancerProfileDto dto);
         Task<FreelancerDetailsDto?> GetFreelancerProfileAsync(string userId);
-        Task<FreelancerStatusDto?> GetFreelancerStatusAsync(int freelancerId);
+        Task<FreelancerStatusDto?> GetFreelancerStatusAsync(string userId);
         Task<ResultDto> ChangeTrackAsync(string userId, ChangeFreelancerTrackDto dto);
 
     }

@@ -8,7 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace alealamia.Infrastructure.Authentication
+namespace alealamia.Infrastructure.Services.Authentication
 {
     public class JwtService : IJwtService
     {

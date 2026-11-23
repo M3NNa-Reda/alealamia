@@ -330,10 +330,10 @@ namespace alealamia.Application.Services
         }
 
         public async Task<FreelancerStatusDto?> GetFreelancerStatusAsync(
-            int freelancerId)
+            string userId)
         {
-            var profile =
-                await _unitOfWork.FreelancerProfiles.GetByIdAsync(freelancerId);
+            var profile = await _unitOfWork.FreelancerProfiles
+                .GetByUserIdAsync(userId);
 
             if (profile == null)
                 return null;

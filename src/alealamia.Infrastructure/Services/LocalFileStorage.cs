@@ -1,7 +1,7 @@
 ﻿using alealamia.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Hosting;
 
-namespace alealamia.Infrastructure.Identity.Services
+namespace alealamia.Infrastructure.Services
 {
     public class LocalFileStorage : IFileStorage
     {

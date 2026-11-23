@@ -37,5 +37,75 @@ namespace alealamia.API.Controllers
                 Message = "Freelancer profile completed successfully."
             });
         }
+
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userId = User.GetUserId();
+
+            var profile = await _freelancerProfileService
+                .GetFreelancerProfileAsync(userId);
+
+            if (profile == null)
+                return NotFound(new
+                {
+                    Message = "Freelancer profile does not exist."
+                });
+
+            return Ok(profile);
+        }
+
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateProfile(
+            [FromBody] UpdateFreelancerProfileDto dto)
+        {
+            var userId = User.GetUserId();
+
+            var result = await _freelancerProfileService
+                .UpdateProfileAsync(userId, dto);
+
+            if (!result.Succeeded)
+                return BadRequest(result);
+
+            return Ok(new
+            {
+                Message = "Freelancer profile updated successfully."
+            });
+        }
+
+        [HttpPatch("change-track")]
+        public async Task<IActionResult> ChangeTrack(
+            [FromBody] ChangeFreelancerTrackDto dto)
+        {
+            var userId = User.GetUserId();
+
+            var result = await _freelancerProfileService
+                .ChangeTrackAsync(userId, dto);
+
+            if (!result.Succeeded)
+                return BadRequest(result);
+
+            return Ok(new
+            {
+                Message = "Track change request submitted successfully. Your profile is pending admin approval."
+            });
+        }
+
+        [HttpGet("status")]
+        public async Task<IActionResult> GetStatus()
+        {
+            var userId = User.GetUserId();
+
+            var status = await _freelancerProfileService
+                .GetFreelancerStatusAsync(userId);
+
+            if (status == null)
+                return NotFound(new
+                {
+                    Message = "Freelancer profile does not exist."
+                });
+
+            return Ok(status);
+        }
     }
 }
