@@ -388,7 +388,7 @@ namespace alealamia.Infrastructure.Migrations
                     b.Property<int>("ApprovalStatus")
                         .HasColumnType("int");
 
-                    b.Property<string>("Bio")
+                    b.Property<string>("About")
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 

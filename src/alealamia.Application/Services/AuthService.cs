@@ -3,8 +3,6 @@ using alealamia.Application.DTOs.Identity;
 using alealamia.Application.Interfaces.Repositories;
 using alealamia.Application.Interfaces.Services;
 using alealamia.Domain.Constants;
-using alealamia.Domain.Entities;
-using alealamia.Domain.Enums;
 
 namespace alealamia.Application.Services
 {
@@ -13,7 +11,6 @@ namespace alealamia.Application.Services
         private readonly IIdentityService _identityService;
         private readonly IJwtService _jwtService;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IFreelancerProfileRepository _freelancerProfileRepository;
 
         public AuthService(
             IIdentityService identityService,
@@ -24,18 +21,25 @@ namespace alealamia.Application.Services
             _identityService = identityService;
             _jwtService = jwtService;
             _unitOfWork = unitOfWork;
-            _freelancerProfileRepository = freelancerProfileRepository;
         }
 
-        public async Task<AuthResultDto> RegisterClientAsync(
-            RegisterClientRequestDto dto)
+        public async Task<AuthResultDto> RegisterAsync(RegisterRequestDto dto)
         {
+            if (dto.Role != AppRoles.Client &&
+                dto.Role != AppRoles.Freelancer)
+            {
+                return Failed(new[] { "Invalid account type." });
+            }
+
             await _unitOfWork.BeginTransactionAsync();
 
             try
             {
-                var result = await CreateUserAsync(dto.FirstName, dto.LastName,
-                    dto.Email, dto.Password);
+                var result = await CreateUserAsync(
+                    dto.FirstName,
+                    dto.LastName,
+                    dto.Email,
+                    dto.Password);
 
                 if (!result.Succeeded)
                 {
@@ -44,80 +48,17 @@ namespace alealamia.Application.Services
                 }
 
                 var roleAdded = await _identityService.AddToRoleAsync(
-                    result.UserId!, AppRoles.Client);
+                    result.UserId!,
+                    dto.Role);
 
                 if (!roleAdded)
+                {
                     throw new InvalidOperationException(
-                        "Failed to assign Client role.");
-
-                var clientProfile = new ClientProfile
-                {
-                    UserId = result.UserId!,
-                    BusinessName = dto.BusinessName,
-                    BusinessType = dto.BusinessType,
-                    WebsiteUrl = dto.WebsiteUrl
-                };
-
-                await _unitOfWork.Repository<ClientProfile>()
-                    .AddAsync(clientProfile);
-
-                await _unitOfWork.CompleteAsync();
-
-                var response = await GenerateAuthResponseAsync(result.UserId!);
-
-                await _unitOfWork.CommitTransactionAsync();
-
-                return response;
-            }
-            catch
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                return Failed(new[] { "Registration failed. Please try again." });
-            }
-        }
-
-        public async Task<AuthResultDto> RegisterFreelancerAsync(
-            RegisterFreelancerRequestDto dto)
-        {
-            var track = await _unitOfWork.Repository<Track>()
-                .GetByIdAsync(dto.TrackId);
-
-            if (track == null)
-                return Failed(new[] { "Invalid Track ID." });
-
-            await _unitOfWork.BeginTransactionAsync();
-
-            try
-            {
-                var result = await CreateUserAsync(dto.FirstName, dto.LastName,
-                    dto.Email, dto.Password);
-
-                if (!result.Succeeded)
-                {
-                    await _unitOfWork.RollbackTransactionAsync();
-                    return Failed(result.Errors);
+                        "Failed to assign user role.");
                 }
 
-                var roleAdded = await _identityService.AddToRoleAsync(
-                    result.UserId!, AppRoles.Freelancer);
-
-                if (!roleAdded)
-                    throw new InvalidOperationException(
-                        "Failed to assign Freelancer role.");
-
-                var freelancerProfile = new FreelancerProfile
-                {
-                    UserId = result.UserId!,
-                    TrackId = dto.TrackId,
-                    ApprovalStatus = FreelancerApprovalStatus.Pending,
-                    IsAvailable = false
-                };
-
-                await _freelancerProfileRepository.AddAsync(freelancerProfile);
-
-                await _unitOfWork.CompleteAsync();
-
-                var response = await GenerateAuthResponseAsync(result.UserId!);
+                var response = await GenerateAuthResponseAsync(
+                    result.UserId!);
 
                 await _unitOfWork.CommitTransactionAsync();
 
@@ -126,10 +67,11 @@ namespace alealamia.Application.Services
             catch
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                return Failed(new[] { "Registration failed. Please try again." });
+
+                return Failed(new[]
+                {"Registration failed. Please try again." });
             }
         }
-
         private async Task<IdentityResultDto> CreateUserAsync(
             string firstName,
             string lastName,

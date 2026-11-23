@@ -36,5 +36,7 @@ namespace alealamia.Infrastructure.Repositories
             return await _context.FreelancerProfiles
                 .FirstOrDefaultAsync(x => x.UserId == userId);
         }
+
+        
     }
 }

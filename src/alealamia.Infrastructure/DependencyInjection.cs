@@ -1,11 +1,12 @@
-﻿using alealamia.Infrastructure.Common.Options;
-using alealamia.Application.Interfaces.Repositories;
+﻿using alealamia.Application.Interfaces.Repositories;
 using alealamia.Application.Interfaces.Services;
-using alealamia.Infrastructure.Authentication;
+using alealamia.Infrastructure.Common.Options;
 using alealamia.Infrastructure.Identity;
 using alealamia.Infrastructure.Identity.Entities;
 using alealamia.Infrastructure.Persistence.Context;
 using alealamia.Infrastructure.Repositories;
+using alealamia.Infrastructure.Services;
+using alealamia.Infrastructure.Services.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -71,6 +72,7 @@ public static class DependencyInjection
         
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        services.AddScoped<IFileStorage, LocalFileStorage>();
 
         services.AddScoped<ITaskSubmissionRepository, TaskSubmissionRepository>();
         services.AddScoped<ITaskReviewRepository, TaskReviewRepository>();
@@ -81,9 +83,19 @@ public static class DependencyInjection
         services.AddScoped<ISupportTicketRepository, SupportTicketRepository>();
         services.AddScoped<ISupportMessageRepository, SupportMessageRepository>();
         services.AddScoped<ISupportMessageFileRepository, SupportMessageFileRepository>();
+        services.AddScoped<ITaskRepository, TaskRepository>();
 
         services.AddScoped<IFreelancerProfileRepository, FreelancerProfileRepository>();
+        services.AddScoped<IFreelancerBlockRepository, FreelancerBlockRepository>();
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IServiceRepository, ServiceRepository>();
+        services.AddScoped<IProjectRepository, ProjectRepository>();
+        services.AddScoped<IProjectServiceRepository, ProjectServiceRepository>();
+        services.AddScoped<IProjectStatusHistoryRepository, ProjectStatusHistoryRepository>();
+        services.AddScoped<IMeetingRepository, MeetingRepository>();
+        services.AddScoped<IMarketingPackageRepository, MarketingPackageRepository>();
+        services.AddScoped<IMarketingPackageItemRepository, MarketingPackageItemRepository>();
+        services.AddScoped<IProjectMarketingPackageRepository, ProjectMarketingPackageRepository>();
 
         return services;
     }

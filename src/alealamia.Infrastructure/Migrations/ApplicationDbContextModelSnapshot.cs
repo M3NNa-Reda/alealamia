@@ -189,7 +189,7 @@ namespace alealamia.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("ClientProfiles", (string)null);
+                    b.ToTable("ClientProfiles");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.EmailNotificationLog", b =>
@@ -236,7 +236,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("EmailNotificationLogs", (string)null);
+                    b.ToTable("EmailNotificationLogs");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.File", b =>
@@ -282,7 +282,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("UploadedByUserId");
 
-                    b.ToTable("Files", (string)null);
+                    b.ToTable("Files");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.FreelancerBlock", b =>
@@ -329,7 +329,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("TaskId");
 
-                    b.ToTable("FreelancerBlocks", (string)null);
+                    b.ToTable("FreelancerBlocks");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.FreelancerLedgerEntry", b =>
@@ -371,7 +371,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("TaskId");
 
-                    b.ToTable("FreelancerLedgerEntries", (string)null);
+                    b.ToTable("FreelancerLedgerEntries");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.FreelancerProfile", b =>
@@ -382,12 +382,12 @@ namespace alealamia.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ApprovalStatus")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Bio")
+                    b.Property<string>("About")
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("ApprovalStatus")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -397,9 +397,17 @@ namespace alealamia.Infrastructure.Migrations
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("LastTrackChangeAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("ProfileImageUrl")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("TrackId")
                         .HasColumnType("int");
@@ -418,7 +426,7 @@ namespace alealamia.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("FreelancerProfiles", (string)null);
+                    b.ToTable("FreelancerProfiles");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.FreelancerSkill", b =>
@@ -441,7 +449,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("SkillId");
 
-                    b.ToTable("FreelancerSkills", (string)null);
+                    b.ToTable("FreelancerSkills");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.MarketingPackage", b =>
@@ -601,7 +609,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.PortfolioItem", b =>
@@ -644,7 +652,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("FreelancerProfileId");
 
-                    b.ToTable("PortfolioItems", (string)null);
+                    b.ToTable("PortfolioItems");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.PortfolioItemFile", b =>
@@ -662,7 +670,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("FileId");
 
-                    b.ToTable("PortfolioItemFiles", (string)null);
+                    b.ToTable("PortfolioItemFiles");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.Project", b =>
@@ -729,7 +737,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("FileId");
 
-                    b.ToTable("ProjectFiles", (string)null);
+                    b.ToTable("ProjectFiles");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.ProjectMarketingPackage", b =>
@@ -929,7 +937,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Skills", (string)null);
+                    b.ToTable("Skills");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.SubmissionFile", b =>
@@ -947,7 +955,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("FileId");
 
-                    b.ToTable("SubmissionFiles", (string)null);
+                    b.ToTable("SubmissionFiles");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.SupportMessage", b =>
@@ -979,7 +987,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("SupportTicketId");
 
-                    b.ToTable("SupportMessages", (string)null);
+                    b.ToTable("SupportMessages");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.SupportMessageFile", b =>
@@ -994,7 +1002,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("FileId");
 
-                    b.ToTable("SupportMessageFiles", (string)null);
+                    b.ToTable("SupportMessageFiles");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.SupportTicket", b =>
@@ -1031,7 +1039,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
-                    b.ToTable("SupportTickets", (string)null);
+                    b.ToTable("SupportTickets");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.Task", b =>
@@ -1098,7 +1106,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("TrackId");
 
-                    b.ToTable("Tasks", (string)null);
+                    b.ToTable("Tasks");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.TaskFile", b =>
@@ -1118,7 +1126,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("FileId");
 
-                    b.ToTable("TaskFiles", (string)null);
+                    b.ToTable("TaskFiles");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.TaskOffer", b =>
@@ -1153,7 +1161,7 @@ namespace alealamia.Infrastructure.Migrations
                     b.HasIndex("TaskId", "FreelancerProfileId")
                         .IsUnique();
 
-                    b.ToTable("TaskOffers", (string)null);
+                    b.ToTable("TaskOffers");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.TaskReassignment", b =>
@@ -1197,7 +1205,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("TaskId");
 
-                    b.ToTable("TaskReassignments", (string)null);
+                    b.ToTable("TaskReassignments");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.TaskRequiredSkill", b =>
@@ -1212,7 +1220,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("SkillId");
 
-                    b.ToTable("TaskRequiredSkills", (string)null);
+                    b.ToTable("TaskRequiredSkills");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.TaskReview", b =>
@@ -1246,7 +1254,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("TaskSubmissionId");
 
-                    b.ToTable("TaskReviews", (string)null);
+                    b.ToTable("TaskReviews");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.TaskRevision", b =>
@@ -1286,7 +1294,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("TaskReviewId");
 
-                    b.ToTable("TaskRevisions", (string)null);
+                    b.ToTable("TaskRevisions");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.TaskStatusHistory", b =>
@@ -1325,7 +1333,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("TaskId");
 
-                    b.ToTable("TaskStatusHistory", (string)null);
+                    b.ToTable("TaskStatusHistory");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.TaskSubmission", b =>
@@ -1358,7 +1366,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("TaskId");
 
-                    b.ToTable("TaskSubmissions", (string)null);
+                    b.ToTable("TaskSubmissions");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.Track", b =>
@@ -1388,7 +1396,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tracks", (string)null);
+                    b.ToTable("Tracks");
                 });
 
             modelBuilder.Entity("alealamia.Domain.Entities.TrackSkill", b =>
@@ -1403,7 +1411,7 @@ namespace alealamia.Infrastructure.Migrations
 
                     b.HasIndex("SkillId");
 
-                    b.ToTable("TrackSkills", (string)null);
+                    b.ToTable("TrackSkills");
                 });
 
             modelBuilder.Entity("alealamia.Infrastructure.Identity.Entities.ApplicationUser", b =>
@@ -2233,15 +2241,13 @@ namespace alealamia.Infrastructure.Migrations
 
             modelBuilder.Entity("alealamia.Infrastructure.Identity.Entities.ApplicationUser", b =>
                 {
-                    b.Navigation("ClientProfile")
-                        .IsRequired();
+                    b.Navigation("ClientProfile");
 
                     b.Navigation("FreelancerBlocks");
 
                     b.Navigation("FreelancerLedgerEntries");
 
-                    b.Navigation("FreelancerProfile")
-                        .IsRequired();
+                    b.Navigation("FreelancerProfile");
 
                     b.Navigation("SupportMessages");
 

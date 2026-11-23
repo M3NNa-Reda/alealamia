@@ -19,8 +19,10 @@ namespace alealamia.Infrastructure.Repositories
         public ISupportTicketRepository SupportTicketRepository { get; private set; }
         public ISupportMessageRepository SupportMessageRepository { get; private set; }
         public ISupportMessageFileRepository SupportMessageFileRepository { get; private set; }
+        public IFreelancerProfileRepository FreelancerProfiles { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context,
+            IFreelancerProfileRepository freelancerProfileRepository,
              IServiceProvider serviceProvider
             , ITaskSubmissionRepository taskSubmissionRepository
             , ITaskReviewRepository taskReviewRepository
@@ -35,6 +37,7 @@ namespace alealamia.Infrastructure.Repositories
         {
             _context = context;
             _serviceProvider = serviceProvider;
+            FreelancerProfiles = freelancerProfileRepository;
             TaskSubmissionRepository = taskSubmissionRepository;
             TaskReviewRepository = taskReviewRepository;
             TaskRevisionRepository = taskRevisionRepository;
@@ -44,8 +47,8 @@ namespace alealamia.Infrastructure.Repositories
             SupportTicketRepository = supportTicketRepository;
             SupportMessageRepository = supportMessageRepository;
             SupportMessageFileRepository = supportMessageFileRepository;
-
         }
+
         public IGenericRepository<T> Repository<T>() where T : class
         {
             return _serviceProvider.GetRequiredService<IGenericRepository<T>>();

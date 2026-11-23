@@ -18,7 +18,8 @@ namespace alealamia.Infrastructure.Configurations
                 .WithMany(x => x.FreelancerProfiles)
                 .HasForeignKey(x => x.TrackId)
                 .OnDelete(DeleteBehavior.Restrict);
-            builder.Property(x => x.Bio)
+            builder.Property(x => x.About)
+                .IsRequired()
                 .HasMaxLength(2000)
                 .IsRequired(false);
             builder.Property(x => x.ProfileImageUrl)
@@ -28,6 +29,9 @@ namespace alealamia.Infrastructure.Configurations
                 .IsRequired();
             builder.Property(x => x.CreatedAt)
                 .HasDefaultValueSql("GETUTCDATE()");
+            builder.Property(x => x.Title)
+                .IsRequired()
+                .HasMaxLength(200);
         }
     }
 }
