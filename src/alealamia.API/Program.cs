@@ -1,3 +1,4 @@
+using alealamia.API.Middleware;
 using alealamia.Infrastructure;
 using alealamia.Infrastructure.Identity.Entities;
 using alealamia.Infrastructure.Seeders;
@@ -14,6 +15,8 @@ namespace EasyShop.API
 
             // Add services to the container.
             builder.Services.AddControllers();
+            builder.Services.AddProblemDetails();
+            builder.Services.AddExceptionHandler<ApiExceptionHandler>();
             builder.Services.AddApplication().AddInfrastructure(builder.Configuration);
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -32,7 +35,7 @@ namespace EasyShop.API
                     userManager,
                     configuration);
             }
-            app.UseExceptionHandler("/error");
+            app.UseExceptionHandler();
             //catches exceptions thrown in the following middlewares so it must come early
             if (app.Environment.IsDevelopment())
             {
