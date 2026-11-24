@@ -10,6 +10,7 @@ namespace alealamia.Application
             services.AddScoped<IFreelancerProfileService, FreelancerProfileService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IAdminFreelancerService, AdminFreelancerService>();
+            services.AddScoped<IClientProfileService, ClientProfileService>();
             services.AddScoped<ITrackService, TrackService>();
             services.AddScoped<ISkillService, SkillService>();
             services.AddScoped<ITaskSubmissionService, TaskSubmissionService>();
