@@ -27,13 +27,18 @@ public class TaskOffersController : ControllerBase
         _freelancerProfileService = freelancerProfileService;
     }
 
+    /// <summary>All offers, with filters. Admin only.</summary>
     [HttpGet]
-    [Authorize(Roles = $"{AppRoles.Admin},{AppRoles.Freelancer}")]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<ActionResult<PagedResultDto<TaskOfferDetailsDto>>> Search([FromQuery] TaskOfferFilterDto filter)
-    {
-        if (User.IsInRole(AppRoles.Freelancer))
-            filter.FreelancerProfileId = await _freelancerProfileService.GetProfileIdAsync(User);
+        => Ok(await _offerService.SearchAsync(filter));
 
+    /// <summary>The calling freelancer's own offers. The freelancer filter is always forced to the caller.</summary>
+    [HttpGet("my-offers")]
+    [Authorize(Roles = AppRoles.Freelancer)]
+    public async Task<ActionResult<PagedResultDto<TaskOfferDetailsDto>>> GetMyOffers([FromQuery] TaskOfferFilterDto filter)
+    {
+        filter.FreelancerProfileId = await _freelancerProfileService.GetProfileIdAsync(User);
         return Ok(await _offerService.SearchAsync(filter));
     }
 
@@ -76,6 +81,7 @@ public class TaskOffersController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
+    /// <summary>Sends offers to every eligible freelancer for a published task.</summary>
     [HttpPost("tasks/{taskId:int}/send")]
     [Authorize(Roles = AppRoles.Admin)]
     public async Task<ActionResult<IEnumerable<TaskOfferDto>>> SendOffers(int taskId)
