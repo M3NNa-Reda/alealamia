@@ -10,5 +10,6 @@ namespace alealamia.Application.Interfaces.Services
         Task<FreelancerReviewDetailsDto?> GetFreelancerDetailsAsync(int id);
         Task<ResultDto> ApproveFreelancerAsync(int freelancerId);
         Task<ResultDto> RejectFreelancerAsync(int freelancerId);
+        Task<ResultDto> UpdateFreelancerSkillLevelAsync(int freelancerId, int skillId, UpdateFreelancerSkillLevelDto dto);
     }
 }
