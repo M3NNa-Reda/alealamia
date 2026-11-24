@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace alealamia.API.Controllers;
 
 [ApiController]
-[Route("api/task-reassignments")]
 public class TaskReassignmentsController : ControllerBase
 {
     private readonly ITaskReassignmentService _reassignmentService;
@@ -22,24 +21,27 @@ public class TaskReassignmentsController : ControllerBase
         _freelancerProfileService = freelancerProfileService;
     }
 
-    [HttpPost]
+    [HttpPost("api/admin/tasks/{taskId:int}/reassign")]
     [Authorize(Roles = AppRoles.Admin)]
-    public async Task<ActionResult<TaskReassignmentDto>> Reassign([FromBody] CreateTaskReassignmentDto dto)
+    public async Task<ActionResult<TaskReassignmentDto>> Reassign(int taskId, [FromBody] CreateTaskReassignmentDto dto)
     {
+        dto.TaskId = taskId;
         dto.ReassignedByUserId = User.GetUserId();
         return Ok(await _reassignmentService.ReassignAsync(dto));
     }
 
-    [HttpPost("withdraw")]
-    [Authorize(Roles = AppRoles.Freelancer)]
-    public async Task<ActionResult<TaskReassignmentDto>> Withdraw([FromBody] WithdrawTaskDto dto)
-    {
-        dto.FreelancerProfileId = await _freelancerProfileService.GetProfileIdAsync(User);
-        return Ok(await _reassignmentService.WithdrawAsync(dto));
-    }
-
-    [HttpGet("tasks/{taskId:int}")]
+    [HttpGet("api/admin/tasks/{taskId:int}/reassignments")]
     [Authorize(Roles = AppRoles.Admin)]
     public async Task<ActionResult<IEnumerable<TaskReassignmentDto>>> GetByTask(int taskId)
         => Ok(await _reassignmentService.GetByTaskAsync(taskId));
+
+    /// <summary>The assigned freelancer gives the task back. The freelancer id always comes from the token.</summary>
+    [HttpPost("api/tasks/{taskId:int}/withdraw")]
+    [Authorize(Roles = AppRoles.Freelancer)]
+    public async Task<ActionResult<TaskReassignmentDto>> Withdraw(int taskId, [FromBody] WithdrawTaskDto dto)
+    {
+        dto.TaskId = taskId;
+        dto.FreelancerProfileId = await _freelancerProfileService.GetProfileIdAsync(User);
+        return Ok(await _reassignmentService.WithdrawAsync(dto));
+    }
 }
