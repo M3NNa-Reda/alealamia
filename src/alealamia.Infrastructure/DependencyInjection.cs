@@ -84,6 +84,12 @@ public static class DependencyInjection
         services.AddScoped<ISupportMessageRepository, SupportMessageRepository>();
         services.AddScoped<ISupportMessageFileRepository, SupportMessageFileRepository>();
         services.AddScoped<ITaskRepository, TaskRepository>();
+        services.AddScoped<ITaskRequiredSkillRepository, TaskRequiredSkillRepository>();
+        services.AddScoped<ITaskOfferRepository, TaskOfferRepository>();
+        services.AddScoped<ITaskStatusHistoryRepository, TaskStatusHistoryRepository>();
+        services.AddScoped<ITaskReassignmentRepository, TaskReassignmentRepository>();
+        services.AddScoped<ITaskFileRepository, TaskFileRepository>();
+        services.AddScoped<ITaskEligibilityRepository, TaskEligibilityRepository>();
 
         services.AddScoped<IFreelancerProfileRepository, FreelancerProfileRepository>();
         services.AddScoped<IFreelancerBlockRepository, FreelancerBlockRepository>();

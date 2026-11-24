@@ -28,6 +28,14 @@ namespace alealamia.Application
             services.AddScoped<IMeetingService, MeetingService>();
             services.AddScoped<IMarketingPackageService, MarketingPackageService>();
             services.AddScoped<IProjectMarketingPackageService, ProjectMarketingPackageService>();
+
+            services.AddSingleton(TimeProvider.System);
+            services.AddScoped<ITaskService, TaskService>();
+            services.AddScoped<ITaskOfferService, TaskOfferService>();
+            services.AddScoped<ITaskAssignmentService, TaskAssignmentService>();
+            services.AddScoped<ITaskEligibilityService, TaskEligibilityService>();
+            services.AddScoped<ITaskReassignmentService, TaskReassignmentService>();
+            services.AddScoped<ITaskDeadlineService, TaskDeadlineService>();
             return services;
         }
     }
