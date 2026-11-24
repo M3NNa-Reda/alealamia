@@ -1,9 +1,10 @@
 using alealamia.API.Middleware;
+using alealamia.Application;
 using alealamia.Infrastructure;
 using alealamia.Infrastructure.Identity.Entities;
 using alealamia.Infrastructure.Seeders;
 using Microsoft.AspNetCore.Identity;
-using alealamia.Application;
+using Microsoft.OpenApi;
 
 namespace EasyShop.API
 {
@@ -21,6 +22,28 @@ namespace EasyShop.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            // ---- Swagger services ----
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "AlAlamia API", Version = "v1" });
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = ""
+                });
+
+                c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+                {
+                    [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+                });
+            });
+            // ---------------------------
             var app = builder.Build();
             using (var scope = app.Services.CreateScope())
             {
