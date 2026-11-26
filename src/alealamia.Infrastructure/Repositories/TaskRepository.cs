@@ -1,4 +1,5 @@
-using alealamia.Application.Interfaces.Repositories;
+﻿using alealamia.Application.Interfaces.Repositories;
+using alealamia.Domain.Constants;
 using alealamia.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using TaskEntity = alealamia.Domain.Entities.Task;
@@ -81,6 +82,16 @@ public class TaskRepository : GenericRepository<TaskEntity>, ITaskRepository
             .Where(t => (t.Status == TaskStatus.Assigned || t.Status == TaskStatus.RevisionRequested)
                         && (t.ExtensionDeadline ?? t.PublishedDeadline) < utcNow)
             .OrderBy(t => t.ExtensionDeadline ?? t.PublishedDeadline)
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<TaskEntity>> GetNoShowCandidatesAsync(DateTime utcNow)
+    {
+        return await _context.Tasks.AsNoTracking()
+            .Where(t => t.Status == TaskStatus.Assigned
+                        && t.AssignedFreelancerId != null
+                        && (t.ExtensionDeadline ?? t.PublishedDeadline.AddDays(TaskRules.LateGraceDays)) < utcNow)
+            .OrderBy(t => t.ExtensionDeadline ?? t.PublishedDeadline.AddDays(TaskRules.LateGraceDays))
             .ToListAsync();
     }
 

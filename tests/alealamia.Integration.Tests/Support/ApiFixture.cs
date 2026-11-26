@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using alealamia.Application.DTOs.Auth;
 using alealamia.Application.DTOs.Freelancer;
+using alealamia.Application.Interfaces.Services;
 using alealamia.Domain.Constants;
 using alealamia.Domain.Enums;
 using alealamia.Infrastructure.Identity.Entities;
@@ -69,9 +70,28 @@ public sealed class ApiFixture : IAsyncLifetime
     {
         return new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
+            // The background deadline monitor is switched off: tests run its logic explicitly (RunNoShowCheckAsync).
+            builder.UseSetting("DeadlineMonitor:Enabled", "false");
+
             foreach (var (key, value) in settings)
                 builder.UseSetting(key, value);
         });
+    }
+
+    /// <summary>Runs one pass of the deadline monitor (tasks that missed the final deadline) and returns what it did.</summary>
+    public async Task<NoShowRunResult> RunNoShowCheckAsync()
+    {
+        using var scope = _factory!.Services.CreateScope();
+        return await scope.ServiceProvider.GetRequiredService<ITaskNoShowService>().ProcessAsync();
+    }
+
+    /// <summary>Moves the published deadline of a task directly in the database (the API refuses past deadlines).</summary>
+    public async System.Threading.Tasks.Task SetPublishedDeadlineAsync(int taskId, DateTime deadlineUtc)
+    {
+        await using var context = CreateContext();
+        await context.Tasks
+            .Where(t => t.Id == taskId)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.PublishedDeadline, deadlineUtc));
     }
 
     /// <summary>Marks an account as inactive directly in the database (the API has no endpoint for it yet).</summary>

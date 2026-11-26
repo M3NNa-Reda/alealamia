@@ -1,3 +1,5 @@
+using alealamia.Application.DTOs.Common;
+using alealamia.Application.DTOs.FreelancerBlock;
 using alealamia.Application.DTOs.TaskAssignments;
 using alealamia.Application.Interfaces.Repositories;
 using alealamia.Application.Interfaces.Services;
@@ -20,6 +22,7 @@ public class TaskReassignmentServiceTests
     private readonly ITaskEligibilityRepository _freelancers = Substitute.For<ITaskEligibilityRepository>();
     private readonly ITaskEligibilityService _eligibility = Substitute.For<ITaskEligibilityService>();
     private readonly ITaskOfferService _offerService = Substitute.For<ITaskOfferService>();
+    private readonly IFreelancerBlockService _blocks = Substitute.For<IFreelancerBlockService>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly TaskReassignmentService _service;
 
@@ -29,6 +32,8 @@ public class TaskReassignmentServiceTests
         _offers.GetOrCreateAcceptedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<DateTime>())
             .Returns(new TaskOffer { Id = 40, Status = TaskOfferStatus.Accepted });
 
+        _blocks.CreateBlockAsync(Arg.Any<CreateFreelancerBlockDto>()).Returns(new ResultDto { Succeeded = true });
+
         _service = new TaskReassignmentService(
             _tasks,
             _reassignments,
@@ -37,6 +42,7 @@ public class TaskReassignmentServiceTests
             _freelancers,
             _eligibility,
             _offerService,
+            _blocks,
             _unitOfWork,
             new FixedTimeProvider(TestData.Now));
     }
@@ -183,5 +189,108 @@ public class TaskReassignmentServiceTests
             TaskId = 1,
             FreelancerProfileId = 5
         }));
+    }
+
+    // ---------- Blocks (BR-09, BR-11) ----------
+
+    [Fact]
+    public async Task Withdraw_BlocksTheFreelancerForSevenDays_BeforeTheNewOffersAreSent()
+    {
+        _freelancers.GetFreelancerSnapshotAsync(5, TestData.Now).Returns(TestData.NewFreelancer(id: 5));
+        _tasks.TryReassignAsync(1, 5, null, TaskStatus.Published, TestData.Now).Returns(true);
+
+        await _service.WithdrawAsync(new WithdrawTaskDto { TaskId = 1, FreelancerProfileId = 5, Reason = "I am no longer available." });
+
+        Received.InOrder(() =>
+        {
+            _blocks.CreateBlockAsync(Arg.Any<CreateFreelancerBlockDto>());
+            _offerService.SendOffersAsync(1);
+        });
+        await _blocks.Received(1).CreateBlockAsync(Arg.Is<CreateFreelancerBlockDto>(b =>
+            b.FreelancerProfileId == 5
+            && b.TaskId == 1
+            && b.StartedAt == TestData.Now
+            && b.EndsAt == TestData.Now.AddDays(7)
+            && b.CreatedByUserId == "user-5"
+            && !string.IsNullOrWhiteSpace(b.Reason)));
+    }
+
+    [Fact]
+    public async Task Withdraw_RollsEverythingBack_WhenTheBlockCannotBeCreated()
+    {
+        _freelancers.GetFreelancerSnapshotAsync(5, TestData.Now).Returns(TestData.NewFreelancer(id: 5));
+        _tasks.TryReassignAsync(1, 5, null, TaskStatus.Published, TestData.Now).Returns(true);
+        _blocks.CreateBlockAsync(Arg.Any<CreateFreelancerBlockDto>())
+            .Returns(new ResultDto { Succeeded = false, Errors = new List<string> { "Invalid freelancer profile ID." } });
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.WithdrawAsync(
+            new WithdrawTaskDto { TaskId = 1, FreelancerProfileId = 5, Reason = "Reason" }));
+
+        await _unitOfWork.Received(1).RollbackTransactionAsync();
+        await _unitOfWork.DidNotReceive().CommitTransactionAsync();
+        await _offerService.DidNotReceive().SendOffersAsync(Arg.Any<int>());
+    }
+
+    [Fact]
+    public async Task Reassign_ByTheAdmin_DoesNotBlockAnyone()
+    {
+        _tasks.TryReassignAsync(1, 5, null, TaskStatus.Published, TestData.Now).Returns(true);
+
+        await _service.ReassignAsync(Reassign(null));
+
+        await _blocks.DidNotReceive().CreateBlockAsync(Arg.Any<CreateFreelancerBlockDto>());
+    }
+
+    [Fact]
+    public async Task NoShow_ReturnsTheTaskToThePool_AndBlocksTheFreelancerForThirtyDays()
+    {
+        // Published deadline 3 days ago, so the final deadline (published + 1 grace day) passed 2 days ago.
+        _tasks.GetReadOnlyByIdAsync(1).Returns(TestData.NewTask(status: TaskStatus.Assigned, assignedFreelancerId: 5, deadline: TestData.Now.AddDays(-3)));
+        _freelancers.GetFreelancerSnapshotAsync(5, TestData.Now).Returns(TestData.NewFreelancer(id: 5));
+        _tasks.TryReassignAsync(1, 5, null, TaskStatus.Published, TestData.Now).Returns(true);
+
+        var result = await _service.RecordNoShowAsync(1);
+
+        Assert.Equal(5, result.PreviousFreelancerId);
+        Assert.Null(result.NewFreelancerId);
+        await _history.Received(1).AddAsync(Arg.Is<TaskStatusHistory>(h =>
+            h.OldStatus == TaskStatus.Assigned && h.NewStatus == TaskStatus.Published));
+        await _blocks.Received(1).CreateBlockAsync(Arg.Is<CreateFreelancerBlockDto>(b =>
+            b.FreelancerProfileId == 5 && b.TaskId == 1 && b.EndsAt == TestData.Now.AddDays(30)));
+        await _offerService.Received(1).SendOffersAsync(1);
+    }
+
+    [Fact]
+    public async Task NoShow_Throws_WhileTheGraceDayIsStillRunning()
+    {
+        // Published deadline 12 hours ago: the extra day has not ended yet.
+        _tasks.GetReadOnlyByIdAsync(1).Returns(TestData.NewTask(status: TaskStatus.Assigned, assignedFreelancerId: 5, deadline: TestData.Now.AddHours(-12)));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.RecordNoShowAsync(1));
+
+        await _blocks.DidNotReceive().CreateBlockAsync(Arg.Any<CreateFreelancerBlockDto>());
+        await _tasks.DidNotReceive().TryReassignAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<int?>(), Arg.Any<TaskStatus>(), Arg.Any<DateTime>());
+    }
+
+    [Fact]
+    public async Task NoShow_UsesTheExtensionDeadline_WhenTheAdminExtendedIt()
+    {
+        _tasks.GetReadOnlyByIdAsync(1).Returns(TestData.NewTask(
+            status: TaskStatus.Assigned,
+            assignedFreelancerId: 5,
+            deadline: TestData.Now.AddDays(-10),
+            extension: TestData.Now.AddDays(1)));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.RecordNoShowAsync(1));
+
+        await _blocks.DidNotReceive().CreateBlockAsync(Arg.Any<CreateFreelancerBlockDto>());
+    }
+
+    [Fact]
+    public async Task NoShow_Throws_WhenTheTaskIsNotAssigned()
+    {
+        _tasks.GetReadOnlyByIdAsync(1).Returns(TestData.NewTask(status: TaskStatus.Submitted, assignedFreelancerId: 5, deadline: TestData.Now.AddDays(-3)));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.RecordNoShowAsync(1));
     }
 }
