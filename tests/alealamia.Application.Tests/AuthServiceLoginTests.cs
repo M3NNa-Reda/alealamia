@@ -3,6 +3,7 @@ using alealamia.Application.DTOs.Identity;
 using alealamia.Application.Interfaces.Repositories;
 using alealamia.Application.Interfaces.Services;
 using alealamia.Application.Services;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Task = System.Threading.Tasks.Task;
 
@@ -19,22 +20,31 @@ public class AuthServiceLoginTests
 
     public AuthServiceLoginTests()
     {
-        _identity.GetUserByEmailAsync(Email).Returns(new ApplicationUserDto
+        var user = new ApplicationUserDto
         {
             Id = "u-1",
             Email = Email,
             FullName = "Test User"
-        });
+        };
+        _identity.GetUserByEmailAsync(Email).Returns(user);
+        _identity.GetUserByIdAsync("u-1").Returns(user);
         _identity.IsActiveAsync("u-1").Returns(true);
         _identity.GetUserRolesAsync("u-1").Returns(new List<string> { "Client" });
-        _jwt.GenerateTokenAsync(Arg.Any<ApplicationUserDto>(), Arg.Any<IList<string>>())
-            .Returns(new TokenDto { Token = "jwt-token", Expiration = new DateTime(2026, 12, 1, 0, 0, 0, DateTimeKind.Utc) });
+        _jwt.GenerateTokensAsync(Arg.Any<ApplicationUserDto>(), Arg.Any<IList<string>>())
+            .Returns(new GeneratedTokensDto
+            {
+                AccessToken = "jwt-token",
+                AccessTokenExpiration = new DateTime(2026, 12, 1, 0, 0, 0, DateTimeKind.Utc),
+                RefreshToken = "refresh-token",
+                RefreshTokenExpiration = new DateTime(2026, 12, 8, 0, 0, 0, DateTimeKind.Utc)
+            });
 
         _service = new AuthService(
             _identity,
             _jwt,
             Substitute.For<IUnitOfWork>(),
-            Substitute.For<IFreelancerProfileRepository>());
+            Substitute.For<IRefreshTokenRepository>(),
+            Substitute.For<ILogger<AuthService>>());
     }
 
     private static LoginRequestDto Login(string email = Email, string password = Password) =>
@@ -49,6 +59,7 @@ public class AuthServiceLoginTests
 
         Assert.True(result.Succeeded);
         Assert.Equal("jwt-token", result.Data!.Token);
+        Assert.Equal("refresh-token", result.Data.RefreshToken);
         Assert.Equal("u-1", result.Data.User.UserId);
         Assert.Contains("Client", result.Data.User.Roles);
     }
@@ -74,7 +85,7 @@ public class AuthServiceLoginTests
 
         Assert.False(result.Succeeded);
         Assert.Equal(new[] { AuthService.InvalidCredentialsMessage }, result.Errors);
-        await _jwt.DidNotReceiveWithAnyArgs().GenerateTokenAsync(default!, default!);
+        await _jwt.DidNotReceiveWithAnyArgs().GenerateTokensAsync(default!, default!);
     }
 
     [Fact]
@@ -86,7 +97,7 @@ public class AuthServiceLoginTests
 
         Assert.False(result.Succeeded);
         Assert.Equal(new[] { AuthService.LockedOutMessage }, result.Errors);
-        await _jwt.DidNotReceiveWithAnyArgs().GenerateTokenAsync(default!, default!);
+        await _jwt.DidNotReceiveWithAnyArgs().GenerateTokensAsync(default!, default!);
     }
 
     [Fact]
@@ -111,7 +122,7 @@ public class AuthServiceLoginTests
 
         Assert.False(result.Succeeded);
         Assert.Equal(new[] { "Your account is inactive." }, result.Errors);
-        await _jwt.DidNotReceiveWithAnyArgs().GenerateTokenAsync(default!, default!);
+        await _jwt.DidNotReceiveWithAnyArgs().GenerateTokensAsync(default!, default!);
     }
 
     [Theory]

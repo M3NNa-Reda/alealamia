@@ -1,4 +1,5 @@
-﻿using alealamia.API.Middleware;
+﻿using alealamia.API.Background;
+using alealamia.API.Middleware;
 using alealamia.API.Security;
 using alealamia.Application;
 using alealamia.Infrastructure;
@@ -21,6 +22,8 @@ namespace EasyShop.API
             builder.Services.AddExceptionHandler<ApiExceptionHandler>();
             builder.Services.AddApiRateLimiting();
             builder.Services.AddFrontendCors();
+            builder.Services.AddOptions<DeadlineMonitorOptions>().BindConfiguration(DeadlineMonitorOptions.SectionName);
+            builder.Services.AddHostedService<DeadlineMonitor>();
             builder.Services.AddHsts(options =>
             {
                 options.MaxAge = TimeSpan.FromDays(365);

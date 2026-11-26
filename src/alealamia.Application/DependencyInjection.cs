@@ -39,6 +39,7 @@ namespace alealamia.Application
             services.AddScoped<ITaskEligibilityService, TaskEligibilityService>();
             services.AddScoped<ITaskReassignmentService, TaskReassignmentService>();
             services.AddScoped<ITaskDeadlineService, TaskDeadlineService>();
+            services.AddScoped<ITaskNoShowService, TaskNoShowService>();
             return services;
         }
     }
