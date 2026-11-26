@@ -20,6 +20,12 @@ namespace EasyShop.API
             builder.Services.AddProblemDetails();
             builder.Services.AddExceptionHandler<ApiExceptionHandler>();
             builder.Services.AddApiRateLimiting();
+            builder.Services.AddFrontendCors();
+            builder.Services.AddHsts(options =>
+            {
+                options.MaxAge = TimeSpan.FromDays(365);
+                options.IncludeSubDomains = true;
+            });
             builder.Services.AddApplication().AddInfrastructure(builder.Configuration);
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -60,6 +66,7 @@ namespace EasyShop.API
                     userManager,
                     configuration);
             }
+            app.UseMiddleware<SecurityHeadersMiddleware>();
             app.UseExceptionHandler();
             //catches exceptions thrown in the following middlewares so it must come early
             if (app.Environment.IsDevelopment())
@@ -68,8 +75,14 @@ namespace EasyShop.API
                 app.UseSwaggerUI();
             }
 
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseHsts();
+            }
+
             app.UseHttpsRedirection();
             app.UseRouting();
+            app.UseCors(CorsExtensions.FrontendPolicy);
             app.UseRateLimiter();
             app.UseAuthentication();
             app.UseAuthorization();
