@@ -64,6 +64,25 @@ public sealed class ApiFixture : IAsyncLifetime
 
     public HttpClient CreateAnonymousClient() => _factory!.CreateClient();
 
+    /// <summary>Starts another host against the same database with the given configuration overrides.</summary>
+    public WebApplicationFactory<Program> CreateFactory(params (string Key, string Value)[] settings)
+    {
+        return new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+        {
+            foreach (var (key, value) in settings)
+                builder.UseSetting(key, value);
+        });
+    }
+
+    /// <summary>Marks an account as inactive directly in the database (the API has no endpoint for it yet).</summary>
+    public async System.Threading.Tasks.Task DeactivateAsync(string userId)
+    {
+        await using var context = CreateContext();
+        await context.Users
+            .Where(u => u.Id == userId)
+            .ExecuteUpdateAsync(s => s.SetProperty(u => u.IsActive, false));
+    }
+
     public async System.Threading.Tasks.Task InitializeAsync()
     {
         if (!SqlServerAvailability.IsAvailable)
@@ -75,7 +94,9 @@ public sealed class ApiFixture : IAsyncLifetime
         }
 
         ConfigureEnvironment();
-        _factory = new WebApplicationFactory<Program>();
+        // The shared host gets a high limit so the many logins of the other tests are never throttled.
+        // Rate limiting itself is tested with a dedicated host (see CreateFactory).
+        _factory = CreateFactory(("RateLimiting:Auth:PermitLimit", "10000"));
 
         // Idempotent: makes sure the roles and the admin exist even if the host skipped the seeding in Program.cs.
         using (var scope = _factory.Services.CreateScope())

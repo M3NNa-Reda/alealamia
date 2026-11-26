@@ -43,6 +43,30 @@ namespace alealamia.Infrastructure.Identity
             return await _userManager.CheckPasswordAsync(user, password);
         }
 
+        public async Task<CredentialCheckResult> CheckCredentialsAsync(string email, string password)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return CredentialCheckResult.InvalidCredentials;
+
+            if (await _userManager.IsLockedOutAsync(user))
+                return CredentialCheckResult.LockedOut;
+
+            if (await _userManager.CheckPasswordAsync(user, password))
+            {
+                await _userManager.ResetAccessFailedCountAsync(user);
+                return CredentialCheckResult.Success;
+            }
+
+            // UserManager.CheckPasswordAsync does not count failures, so the attempt is registered here.
+            // The call that reaches the limit also locks the account.
+            await _userManager.AccessFailedAsync(user);
+
+            return await _userManager.IsLockedOutAsync(user)
+                ? CredentialCheckResult.LockedOut
+                : CredentialCheckResult.InvalidCredentials;
+        }
+
         public async Task<IdentityResultDto> CreateUserAsync(CreateUserDto userDto)
         {
             var user = new ApplicationUser
