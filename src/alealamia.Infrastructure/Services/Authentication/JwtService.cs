@@ -1,11 +1,11 @@
-﻿using alealamia.Infrastructure.Common.Options;
-using alealamia.Application.DTOs.Auth;
+﻿using alealamia.Application.DTOs.Auth;
 using alealamia.Application.DTOs.Identity;
 using alealamia.Application.Interfaces.Services;
-using Microsoft.Extensions.Options;
+using alealamia.Infrastructure.Common.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace alealamia.Infrastructure.Services.Authentication
@@ -19,13 +19,16 @@ namespace alealamia.Infrastructure.Services.Authentication
             _jwtOptions = jwtOptions;
         }
 
-        public Task<TokenDto> GenerateTokenAsync(ApplicationUserDto user,IList<string> roles)
+        public Task<GeneratedTokensDto> GenerateTokensAsync(ApplicationUserDto user, IList<string> roles)
         {
+            var now = DateTime.UtcNow;
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.FullName)
+                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+                new Claim(ClaimTypes.Name, user.FullName ?? string.Empty),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
             foreach (var role in roles)
@@ -40,24 +43,32 @@ namespace alealamia.Infrastructure.Services.Authentication
                 key,
                 SecurityAlgorithms.HmacSha256);
 
-            var expiration = DateTime.UtcNow.AddMinutes(
+            var accessTokenExpiration = now.AddMinutes(
                 _jwtOptions.AccessTokenExpirationMinutes);
 
             var token = new JwtSecurityToken(
                 issuer: _jwtOptions.Issuer,
                 audience: _jwtOptions.Audience,
                 claims: claims,
-                expires: expiration,
+                notBefore: now,
+                expires: accessTokenExpiration,
                 signingCredentials: credentials
             );
 
-            var tokenString = new JwtSecurityTokenHandler()
-                .WriteToken(token);
+            var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
 
-            return Task.FromResult(new TokenDto
+            var refreshToken = Base64UrlEncoder.Encode(
+                RandomNumberGenerator.GetBytes(64));
+
+            var refreshTokenExpiration = now.AddDays(
+                _jwtOptions.RefreshTokenExpirationDays);
+
+            return Task.FromResult(new GeneratedTokensDto
             {
-                Token = tokenString,
-                Expiration = expiration
+                AccessToken = accessToken,
+                AccessTokenExpiration = accessTokenExpiration,
+                RefreshToken = refreshToken,
+                RefreshTokenExpiration = refreshTokenExpiration
             });
         }
     }
