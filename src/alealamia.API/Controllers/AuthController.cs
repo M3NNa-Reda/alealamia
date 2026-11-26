@@ -2,11 +2,14 @@
 using alealamia.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using alealamia.API.Security;
 
 namespace alealamia.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableRateLimiting(RateLimitingExtensions.AuthPolicy)]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;

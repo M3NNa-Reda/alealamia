@@ -8,6 +8,9 @@ namespace alealamia.Application.Services
 {
     public class AuthService : IAuthService
     {
+        public const string InvalidCredentialsMessage = "Invalid email or password.";
+        public const string LockedOutMessage = "Too many failed attempts. The account is temporarily locked, please try again later.";
+
         private readonly IIdentityService _identityService;
         private readonly IJwtService _jwtService;
         private readonly IUnitOfWork _unitOfWork;
@@ -128,30 +131,39 @@ namespace alealamia.Application.Services
 
         public async Task<AuthResultDto> LoginAsync(LoginRequestDto dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrEmpty(dto.Password))
+            {
+                return Failed(new[] { InvalidCredentialsMessage });
+            }
+
             var user = await _identityService.GetUserByEmailAsync(dto.Email);
 
             if (user == null)
             {
-                return Failed(new[]
-                { "Invalid email or password."});
+                return Failed(new[] { InvalidCredentialsMessage });
+            }
+
+            // The password is verified first so that the response never reveals the state of an account
+            // (for example "inactive") to someone who does not know its password.
+            var credentials = await _identityService.CheckCredentialsAsync(
+                dto.Email,
+                dto.Password);
+
+            if (credentials == CredentialCheckResult.LockedOut)
+            {
+                return Failed(new[] { LockedOutMessage });
+            }
+
+            if (credentials != CredentialCheckResult.Success)
+            {
+                return Failed(new[] { InvalidCredentialsMessage });
             }
 
             var isActive = await _identityService.IsActiveAsync(user.Id);
 
             if (!isActive)
             {
-                return Failed(new[]
-                {"Your account is inactive."});
-            }
-
-            var passwordValid = await _identityService.CheckPasswordAsync(
-                dto.Email,
-                dto.Password);
-
-            if (!passwordValid)
-            {
-                return Failed(new[]
-                {"Invalid email or password."});
+                return Failed(new[] { "Your account is inactive." });
             }
 
             var roles = await _identityService.GetUserRolesAsync(user.Id);

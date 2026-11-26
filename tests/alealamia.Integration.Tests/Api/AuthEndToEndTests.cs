@@ -150,7 +150,7 @@ public class AuthEndToEndTests
         await (await _api.Admin.PatchEmptyAsync("api/admin/freelancers/999999/approve")).ExpectAsync(HttpStatusCode.BadRequest);
     }
 
-    [Fact(Skip = "Known security gap: login uses UserManager.CheckPasswordAsync, which never counts failed attempts, so the lockout configured in DependencyInjection is not enforced. Enable this test together with the lockout fix.")]
+    [SqlServerFact]
     public async System.Threading.Tasks.Task Login_LocksTheAccount_AfterFiveWrongPasswords()
     {
         var (_, _, email) = await _api.RegisterAsync(AppRoles.Client);
@@ -158,13 +158,95 @@ public class AuthEndToEndTests
 
         for (var attempt = 0; attempt < 5; attempt++)
         {
-            await client.PostJsonAsync("api/Auth/login", new LoginRequestDto { Email = email, Password = "Wrong-Pass@123" });
+            await (await WrongLoginAsync(client, email)).ExpectAsync(HttpStatusCode.Unauthorized);
         }
 
         // The correct password must now be refused because the account is locked.
         var response = await client.PostJsonAsync("api/Auth/login", new LoginRequestDto { Email = email, Password = ApiFixture.UserPassword });
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        await response.ExpectAsync(HttpStatusCode.Unauthorized);
+
+        var result = await response.ReadAsync<AuthResultDto>();
+        Assert.False(result.Succeeded);
+        Assert.Contains(result.Errors, e => e.Contains("locked", StringComparison.OrdinalIgnoreCase));
     }
+
+    [SqlServerFact]
+    public async System.Threading.Tasks.Task Login_ResetsTheFailedAttempts_AfterASuccessfulLogin()
+    {
+        var (_, _, email) = await _api.RegisterAsync(AppRoles.Client);
+        using var client = _api.CreateAnonymousClient();
+
+        // Four wrong passwords, one success, four more wrong passwords: never five in a row, so no lockout.
+        for (var round = 0; round < 2; round++)
+        {
+            for (var attempt = 0; attempt < 4; attempt++)
+                await (await WrongLoginAsync(client, email)).ExpectAsync(HttpStatusCode.Unauthorized);
+
+            var response = await client.PostJsonAsync("api/Auth/login", new LoginRequestDto { Email = email, Password = ApiFixture.UserPassword });
+            await response.ExpectAsync(HttpStatusCode.OK);
+        }
+    }
+
+    [SqlServerFact]
+    public async System.Threading.Tasks.Task Login_LockoutOfOneAccount_DoesNotAffectAnotherAccount()
+    {
+        var (_, _, victim) = await _api.RegisterAsync(AppRoles.Client);
+        var (_, _, other) = await _api.RegisterAsync(AppRoles.Client);
+        using var client = _api.CreateAnonymousClient();
+
+        for (var attempt = 0; attempt < 5; attempt++)
+            await WrongLoginAsync(client, victim);
+
+        var response = await client.PostJsonAsync("api/Auth/login", new LoginRequestDto { Email = other, Password = ApiFixture.UserPassword });
+        await response.ExpectAsync(HttpStatusCode.OK);
+    }
+
+    [SqlServerFact]
+    public async System.Threading.Tasks.Task Login_DoesNotRevealAnInactiveAccount_ToSomeoneWithTheWrongPassword()
+    {
+        var (_, userId, email) = await _api.RegisterAsync(AppRoles.Client);
+        await _api.DeactivateAsync(userId);
+        using var client = _api.CreateAnonymousClient();
+
+        var wrong = await WrongLoginAsync(client, email);
+        await wrong.ExpectAsync(HttpStatusCode.Unauthorized);
+        var unknown = await WrongLoginAsync(client, $"nobody.{Guid.NewGuid():N}@e2e.test");
+
+        Assert.Equal(
+            (await unknown.ReadAsync<AuthResultDto>()).Errors,
+            (await wrong.ReadAsync<AuthResultDto>()).Errors);
+
+        // Whoever knows the password is told why the login is refused.
+        var right = await client.PostJsonAsync("api/Auth/login", new LoginRequestDto { Email = email, Password = ApiFixture.UserPassword });
+        await right.ExpectAsync(HttpStatusCode.Unauthorized);
+        Assert.Contains("inactive", (await right.ReadAsync<AuthResultDto>()).Errors.Single(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [SqlServerFact]
+    public async System.Threading.Tasks.Task AuthEndpoints_AreRateLimited_AndReturnRetryAfter()
+    {
+        using var factory = _api.CreateFactory(("RateLimiting:Auth:PermitLimit", "3"), ("RateLimiting:Auth:WindowSeconds", "60"));
+        using var client = factory.CreateClient();
+        var email = $"nobody.{Guid.NewGuid():N}@e2e.test";
+
+        for (var attempt = 0; attempt < 3; attempt++)
+            await (await WrongLoginAsync(client, email)).ExpectAsync(HttpStatusCode.Unauthorized);
+
+        var limited = await WrongLoginAsync(client, email);
+        await limited.ExpectAsync(HttpStatusCode.TooManyRequests);
+        Assert.True(limited.Headers.Contains("Retry-After"));
+
+        // Register shares the same policy, so it is limited too.
+        var register = await client.PostJsonAsync("api/Auth/register", NewRegistration($"x.{Guid.NewGuid():N}@e2e.test", AppRoles.Client));
+        await register.ExpectAsync(HttpStatusCode.TooManyRequests);
+
+        // Other endpoints are not affected.
+        var other = await client.GetAsync("api/FreelancerProfile/profile");
+        Assert.Equal(HttpStatusCode.Unauthorized, other.StatusCode);
+    }
+
+    private static System.Threading.Tasks.Task<HttpResponseMessage> WrongLoginAsync(HttpClient client, string email) =>
+        client.PostJsonAsync("api/Auth/login", new LoginRequestDto { Email = email, Password = "Wrong-Pass@123" });
 
     private static RegisterRequestDto NewRegistration(string email, string role) => new()
     {

@@ -1,4 +1,5 @@
-using alealamia.API.Middleware;
+﻿using alealamia.API.Middleware;
+using alealamia.API.Security;
 using alealamia.Application;
 using alealamia.Infrastructure;
 using alealamia.Infrastructure.Identity.Entities;
@@ -18,6 +19,7 @@ namespace EasyShop.API
             builder.Services.AddControllers();
             builder.Services.AddProblemDetails();
             builder.Services.AddExceptionHandler<ApiExceptionHandler>();
+            builder.Services.AddApiRateLimiting();
             builder.Services.AddApplication().AddInfrastructure(builder.Configuration);
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -68,6 +70,7 @@ namespace EasyShop.API
 
             app.UseHttpsRedirection();
             app.UseRouting();
+            app.UseRateLimiter();
             app.UseAuthentication();
             app.UseAuthorization();
 
