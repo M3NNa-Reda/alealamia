@@ -102,6 +102,7 @@ public static class DependencyInjection
         services.AddScoped<IMarketingPackageRepository, MarketingPackageRepository>();
         services.AddScoped<IMarketingPackageItemRepository, MarketingPackageItemRepository>();
         services.AddScoped<IProjectMarketingPackageRepository, ProjectMarketingPackageRepository>();
+        services.AddScoped<IPortfolioRepository, PortfolioRepository>();
 
         return services;
     }
