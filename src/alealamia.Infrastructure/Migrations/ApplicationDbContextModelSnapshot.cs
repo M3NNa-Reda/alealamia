@@ -883,6 +883,50 @@ namespace alealamia.Infrastructure.Migrations
                     b.ToTable("ProjectStatusHistories", (string)null);
                 });
 
+            modelBuilder.Entity("alealamia.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReplacedByTokenHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("TokenFamilyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenFamilyId");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
+
             modelBuilder.Entity("alealamia.Domain.Entities.Service", b =>
                 {
                     b.Property<int>("Id")
@@ -1832,6 +1876,15 @@ namespace alealamia.Infrastructure.Migrations
                     b.Navigation("Project");
                 });
 
+            modelBuilder.Entity("alealamia.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("alealamia.Infrastructure.Identity.Entities.ApplicationUser", null)
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("alealamia.Domain.Entities.SubmissionFile", b =>
                 {
                     b.HasOne("alealamia.Domain.Entities.File", "File")
@@ -2248,6 +2301,8 @@ namespace alealamia.Infrastructure.Migrations
                     b.Navigation("FreelancerLedgerEntries");
 
                     b.Navigation("FreelancerProfile");
+
+                    b.Navigation("RefreshTokens");
 
                     b.Navigation("SupportMessages");
 

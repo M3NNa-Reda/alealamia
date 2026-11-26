@@ -22,5 +22,6 @@ namespace alealamia.Infrastructure.Identity.Entities
         public ICollection<TaskReassignment> TaskReassignments { get; set; } = new List<TaskReassignment>();
         public ICollection<SupportMessage> SupportMessages { get; set; } = new List<SupportMessage>();
         public ICollection<Domain.Entities.Task> Tasks { get; set; } = new List<Domain.Entities.Task>();
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     }
 }

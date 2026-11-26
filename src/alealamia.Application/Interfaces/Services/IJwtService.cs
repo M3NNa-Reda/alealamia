@@ -8,6 +8,6 @@ namespace alealamia.Application.Interfaces.Services
 {
     public interface IJwtService
     {
-        Task<TokenDto> GenerateTokenAsync(ApplicationUserDto user, IList<string> roles);
+        Task<GeneratedTokensDto> GenerateTokensAsync(ApplicationUserDto user, IList<string> roles);
     }
 }
