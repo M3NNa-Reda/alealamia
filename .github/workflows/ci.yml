@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: "Ci-Passw0rd!2026"
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'Ci-Passw0rd!2026' -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+          --health-start-period 20s
+
+    env:
+      DOTNET_NOLOGO: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+      ALEALAMIA_TEST_CONNECTION: "Server=localhost,1433;User Id=sa;Password=Ci-Passw0rd!2026;Encrypt=True;TrustServerCertificate=True;"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore alealamia.slnx
+
+      - name: Build
+        run: dotnet build alealamia.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: >
+          dotnet test alealamia.slnx --configuration Release --no-build
+          --logger "trx;LogFileName=results.trx" --results-directory TestResults
+
+      # The database tests skip themselves when SQL Server is unreachable. In CI that would hide failures,
+      # so any skipped test fails the build.
+      - name: Fail if any test was skipped
+        run: |
+          skipped=$(grep -rho 'outcome="NotExecuted"' TestResults | wc -l)
+          echo "Skipped tests: $skipped"
+          if [ "$skipped" -gt 0 ]; then
+            echo "::error::$skipped test(s) were skipped. SQL Server must be reachable in CI."
+            exit 1
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults
