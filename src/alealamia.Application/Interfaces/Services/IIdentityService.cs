@@ -1,4 +1,6 @@
-﻿using alealamia.Application.DTOs.Identity;
+﻿using alealamia.Application.DTOs.Common;
+using alealamia.Application.DTOs.Identity;
+using alealamia.Application.DTOs.Users;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,6 +14,13 @@ namespace alealamia.Application.Interfaces.Services
         Task<ApplicationUserDto?> GetUserByEmailAsync(string email);
         Task<ApplicationUserDto?> GetUserByIdAsync(string userId);
         Task<bool> CheckPasswordAsync(string email, string password);
+        Task<UserAccountDto?> GetUserAccountAsync(string userId);
+        Task<PagedResultDto<UserAccountDto>> GetUsersAsync(UserListQueryDto query);
+        Task<IdentityResultDto> SetPhoneNumberAsync(string userId, string? phoneNumber);
+        Task<IdentityResultDto> ChangePasswordAsync(
+            string userId, string currentPassword, string newPassword);
+
+        Task<IdentityResultDto> SetActiveStatusAsync(string userId, bool isActive);
 
         /// <summary>
         /// Validates the credentials and applies the lockout policy: a wrong password counts as a failed attempt,
