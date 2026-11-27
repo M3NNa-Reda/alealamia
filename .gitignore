@@ -361,3 +361,12 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# --- Al-Alamia ---
+# Local test output and results
+test-output.txt
+TestResults/
+*.trx
+
+# User-uploaded files (never commit runtime uploads)
+**/wwwroot/uploads/
