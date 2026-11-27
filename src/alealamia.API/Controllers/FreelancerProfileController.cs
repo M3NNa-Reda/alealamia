@@ -1,4 +1,4 @@
-﻿using alealamia.API.Helpers.Extensions;
+using alealamia.API.Helpers.Extensions;
 using alealamia.Application.DTOs.Freelancer;
 using alealamia.Application.Interfaces.Services;
 using alealamia.Domain.Constants;
@@ -88,6 +88,26 @@ namespace alealamia.API.Controllers
             return Ok(new
             {
                 Message = "Track change request submitted successfully. Your profile is pending admin approval."
+            });
+        }
+
+        [HttpPatch("availability")]
+        public async Task<IActionResult> SetAvailability(
+            [FromBody] SetAvailabilityDto dto)
+        {
+            var userId = User.GetUserId();
+
+            var result = await _freelancerProfileService
+                .SetAvailabilityAsync(userId, dto);
+
+            if (!result.Succeeded)
+                return BadRequest(result);
+
+            return Ok(new
+            {
+                Message = dto.IsAvailable
+                    ? "You are now available for new task offers."
+                    : "You will not receive new task offers until you switch availability back on."
             });
         }
 

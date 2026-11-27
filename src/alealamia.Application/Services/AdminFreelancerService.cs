@@ -1,4 +1,4 @@
-﻿using alealamia.Application.DTOs.Admin;
+using alealamia.Application.DTOs.Admin;
 using alealamia.Application.DTOs.Common;
 using alealamia.Application.Interfaces.Repositories;
 using alealamia.Application.Interfaces.Services;
@@ -173,6 +173,10 @@ namespace alealamia.Application.Services
             }
 
             freelancer.ApprovalStatus = newStatus;
+
+            // An approved freelancer starts receiving offers right away and can switch it off from their profile.
+            // A rejected profile is never available.
+            freelancer.IsAvailable = newStatus == FreelancerApprovalStatus.Approved;
             freelancer.UpdatedAt = DateTime.UtcNow;
 
             _unitOfWork.FreelancerProfiles.Update(freelancer);
