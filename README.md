@@ -209,18 +209,23 @@ The final entity list should be synchronized with the actual database model and 
 
 ## Security and Access Control
 
-The platform uses ASP.NET Core Identity and JWT as part of its planned authentication and authorization approach.
+The API is protected in layers. Each layer is covered by automated tests that run against a real SQL Server in CI.
 
-Security responsibilities include:
+| Area | What is in place |
+|---|---|
+| **Authentication** | ASP.NET Core Identity with JWT access tokens and rotating refresh tokens with replay detection. Passwords need at least 8 characters and a digit. |
+| **Brute-force protection** | Five failed sign-ins lock the account for 5 minutes. The login error is the same for a wrong password and an unknown e-mail, so accounts cannot be enumerated. |
+| **Rate limiting** | Per client IP: 10 requests a minute on register and login, 20 a minute on file upload. Limits are configuration values. |
+| **Authorization** | Role policies (Admin, Client, Freelancer) plus resource checks: a freelancer sees a task only when it is assigned or offered to them, and only an approved freelancer can take part in tasks. Identity always comes from the token, never from the request body. |
+| **Task integrity** | Concurrent acceptance is decided atomically; a blocked freelancer receives no new offers; a missed final deadline returns the task to the pool and blocks the freelancer for 30 days (a background monitor enforces this). |
+| **File upload** | One upload endpoint with an extension allowlist, a 10 MB limit and a content check (a renamed program is refused). The server decides the content type, files are stored under a generated name, and downloads go through an authorized endpoint as attachments. There is no public file link. |
+| **Browser protection** | CORS denies every origin unless it is listed in configuration; security headers on every response (`nosniff`, frame denial, referrer policy, content security policy); HSTS outside Development; API responses are not cached. |
+| **Errors** | Rule violations return a consistent `ProblemDetails` response (400, 403, 404, 409) with a clear message; unexpected failures return a plain 500 with no internal details, and are logged on the server. |
+| **Delivery pipeline** | GitHub Actions builds and runs all tests on every pull request, with a SQL Server service container. A run fails if any test is skipped. |
 
-- **Identity management:** Managing user accounts and authentication-related information.
-- **Role-based authorization:** Restricting operations according to the user's role and permissions.
-- **Client ownership:** Ensuring clients can access only their own projects and related information.
-- **Freelancer access:** Restricting task operations to the appropriate freelancer and assignment state.
-- **Administrative operations:** Protecting privileged actions such as task assignment, reviews, and account management.
-- **Input validation:** Validating incoming requests before business operations are performed.
+Authentication alone is not enough: every operation also checks that the signed-in user may act on that specific resource.
 
-Authentication alone is not sufficient: authorization must also verify that the authenticated user is allowed to perform the requested action on the specific resource.
+**Before a real deployment:** replace the development JWT key and connection string with secrets from the environment, list the front-end origin under `Cors:AllowedOrigins`, and configure forwarded headers if the API runs behind a reverse proxy.
 
 ## Task Assignment and Review
 
@@ -302,7 +307,7 @@ Each team member contributes to building and refining the platform as part of th
 
 ## Delivery Plan
 
-Hand-in: **Saturday 5 December 2026**. Work runs from 28 October with a milestone every week and a buffer at the end.
+Hand-in: **Monday 30 November 2026**. Work runs from 28 October with a milestone every week and a buffer at the end.
 
 | Week | Dates | Focus | Milestone |
 |---|---|---|---|
@@ -310,8 +315,8 @@ Hand-in: **Saturday 5 December 2026**. Work runs from 28 October with a mileston
 | 2 | 4 – 10 Nov | Flows: freelancer approval, projects, pricing, meetings, tasks and offers | M2: request → priced → tasks → offers |
 | 3 | 11 – 17 Nov | Engine: concurrent accept and monthly cap, delivery and review, notifications, support | M3: accept engine passes the 50-request test |
 | 4 | 18 – 24 Nov | Rules and money: deadline monitor, deductions, blocks, ledger, marketing packages | M4: full journey including penalties |
-| 5 | 25 Nov – 1 Dec | Polish: performance, E2E tests, security, accessibility, demo data | M5: release candidate |
-| – | 2 – 5 Dec | Buffer: code freeze, fixes only, rehearsal, hand-in | Delivery |
+| 5 | 25 – 29 Nov | Polish: performance, E2E tests, security, accessibility, demo data | M5: release candidate |
+| – | 29 – 30 Nov | Code freeze, fixes only, rehearsal, hand-in | Delivery |
 
 Each member owns a vertical module (database, API, UI, tests). The proposed split is in section 12 of the design document.
 
@@ -334,6 +339,22 @@ python -m http.server 8080
 # http://localhost:8080/Freelancer.dc.html  (freelancer)
 # http://localhost:8080/Admin.dc.html       (admin)
 ```
+
+## Running the API and the Tests
+
+Requirements: .NET 10 SDK and SQL Server (a local instance or a container).
+
+```bash
+# API: set the connection string and JWT settings (user secrets or environment variables), then
+dotnet run --project src/alealamia.API
+# Swagger UI (Development): https://localhost:<port>/swagger
+
+# Tests: unit tests need nothing; the end-to-end tests need SQL Server
+export ALEALAMIA_TEST_CONNECTION="Server=localhost,1433;User Id=sa;Password=<password>;Encrypt=True;TrustServerCertificate=True;"
+dotnet test alealamia.slnx
+```
+
+The end-to-end tests create a throw-away database, drive the real HTTP pipeline (registration, tasks, offers, assignment, blocks, files, security headers) and delete the database afterwards. Without a reachable SQL Server they skip themselves; the CI workflow makes a skipped test a failure.
 
 ## What Comes Next
 
