@@ -60,5 +60,16 @@ namespace alealamia.Infrastructure.Repositories
                 .Where(x => x.ExpiresAt < expiredBeforeUtc)
                 .ExecuteDeleteAsync(cancellationToken);
         }
+        public Task<int> RevokeAllForUserAsync(
+            string userId,
+            DateTime nowUtc,
+            CancellationToken cancellationToken = default)
+        {
+            return _context.RefreshTokens
+                .Where(x => x.UserId == userId && x.RevokedAt == null)
+                .ExecuteUpdateAsync(
+                    s => s.SetProperty(x => x.RevokedAt, (DateTime?)nowUtc),
+                    cancellationToken);
+        }
     }
 }

@@ -108,7 +108,7 @@ public class TaskOfferService : ITaskOfferService
         {
             Items = items.Select(o => o.ToDetailsDto()).ToList(),
             TotalCount = total,
-            Page = page,
+            PageNumber = page,
             PageSize = pageSize
         };
     }

@@ -15,6 +15,7 @@ namespace alealamia.Application
             services.AddScoped<ISkillService, SkillService>();
             services.AddScoped<IFreelancerBlockService, FreelancerBlockService>();
             services.AddScoped<IPortfolioService, PortfolioService>();
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<ITaskSubmissionService, TaskSubmissionService>();
             services.AddScoped<ITaskReviewService, TaskReviewService>();
             services.AddScoped<ITaskRevisionService, TaskRevisionService>();

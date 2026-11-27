@@ -403,7 +403,7 @@ public class TaskServiceTests
 
         PagedResultDto<TaskDto> result = await _service.SearchAsync(new TaskFilterDto { Page = 0, PageSize = 5000 });
 
-        Assert.Equal(1, result.Page);
+        Assert.Equal(1, result.PageNumber);
         Assert.Equal(100, result.PageSize);
         Assert.Equal(1, result.TotalCount);
         Assert.Single(result.Items);

@@ -22,5 +22,9 @@ namespace alealamia.Application.Interfaces.Repositories
         Task<int> DeleteExpiredAsync(
             DateTime expiredBeforeUtc,
             CancellationToken cancellationToken = default);
+        Task<int> RevokeAllForUserAsync(
+            string userId,
+            DateTime nowUtc,
+            CancellationToken cancellationToken = default);
     }
 }

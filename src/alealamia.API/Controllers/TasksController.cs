@@ -93,7 +93,7 @@ public class TasksController : ControllerBase
         {
             Items = source.Items.Select(t => FreelancerTaskDto.From(t, freelancerProfileId)).ToList(),
             TotalCount = source.TotalCount,
-            Page = source.Page,
+            PageNumber = source.PageNumber,
             PageSize = source.PageSize
         };
 }
