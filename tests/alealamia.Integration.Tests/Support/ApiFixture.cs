@@ -203,7 +203,7 @@ public sealed class ApiFixture : IAsyncLifetime
 
     /// <summary>
     /// Registers a freelancer, completes the profile through the API and (optionally) approves the freelancer.
-    /// Availability is switched on in the database because the API has no endpoint for it yet.
+    /// Approving switches availability on; the database is only touched when a test needs a different state.
     /// </summary>
     public async Task<FreelancerAccount> CreateFreelancerAsync(World world, bool approve = true, bool available = true)
     {
@@ -225,12 +225,13 @@ public sealed class ApiFixture : IAsyncLifetime
                 .ExpectAsync(HttpStatusCode.OK);
         }
 
-        if (available)
+        // Approval switches availability on. The database is only touched when the test wants a different state.
+        if (available != approve)
         {
             await using var context = CreateContext();
             await context.FreelancerProfiles
                 .Where(p => p.Id == profile.Id)
-                .ExecuteUpdateAsync(s => s.SetProperty(p => p.IsAvailable, true));
+                .ExecuteUpdateAsync(s => s.SetProperty(p => p.IsAvailable, available));
         }
 
         return new FreelancerAccount(http, profile.Id, email, userId);

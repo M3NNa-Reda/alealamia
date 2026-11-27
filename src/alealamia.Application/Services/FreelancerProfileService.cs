@@ -1,4 +1,4 @@
-﻿using alealamia.Application.DTOs.Common;
+using alealamia.Application.DTOs.Common;
 using alealamia.Application.DTOs.Freelancer;
 using alealamia.Application.DTOs.Identity;
 using alealamia.Application.Interfaces.Repositories;
@@ -327,6 +327,28 @@ namespace alealamia.Application.Services
                 TrackName = track?.Name ?? string.Empty,
                 Skills = skills
             };
+        }
+
+        public async Task<ResultDto> SetAvailabilityAsync(
+            string userId,
+            SetAvailabilityDto dto)
+        {
+            var profile =
+                await _unitOfWork.FreelancerProfiles.GetByUserIdAsync(userId);
+
+            if (profile == null)
+                return Failed("Freelancer profile does not exist.");
+
+            if (profile.ApprovalStatus != FreelancerApprovalStatus.Approved)
+                return Failed("Only approved freelancers can change their availability.");
+
+            profile.IsAvailable = dto.IsAvailable;
+            profile.UpdatedAt = DateTime.UtcNow;
+
+            _unitOfWork.FreelancerProfiles.Update(profile);
+            await _unitOfWork.CompleteAsync();
+
+            return Success();
         }
 
         public async Task<FreelancerStatusDto?> GetFreelancerStatusAsync(
