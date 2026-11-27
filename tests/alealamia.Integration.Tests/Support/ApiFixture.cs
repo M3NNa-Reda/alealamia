@@ -116,7 +116,9 @@ public sealed class ApiFixture : IAsyncLifetime
         ConfigureEnvironment();
         // The shared host gets a high limit so the many logins of the other tests are never throttled.
         // Rate limiting itself is tested with a dedicated host (see CreateFactory).
-        _factory = CreateFactory(("RateLimiting:Auth:PermitLimit", "10000"));
+        _factory = CreateFactory(
+            ("RateLimiting:Auth:PermitLimit", "10000"),
+            ("RateLimiting:Upload:PermitLimit", "10000"));
 
         // Idempotent: makes sure the roles and the admin exist even if the host skipped the seeding in Program.cs.
         using (var scope = _factory.Services.CreateScope())
