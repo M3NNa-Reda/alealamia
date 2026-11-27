@@ -1,4 +1,5 @@
-﻿using alealamia.Application.DTOs.Files;
+using alealamia.Application.DTOs.Files;
+using alealamia.Application.Files;
 using alealamia.Application.Interfaces.Repositories;
 using alealamia.Application.Interfaces.Services;
 using FileEntity = alealamia.Domain.Entities.File;
@@ -7,8 +8,6 @@ namespace alealamia.Application.Services
 {
     public class FileService : IFileService
     {
-        private const long MaxFileSize = 100 * 1024 * 1024; // 100 MB
-
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFileStorage _fileStorage;
 
@@ -26,11 +25,28 @@ namespace alealamia.Application.Services
             if (string.IsNullOrWhiteSpace(uploadedByUserId))
                 throw new ArgumentException("User id is required.");
 
-            if (dto.File.Length > MaxFileSize)
-                throw new ArgumentException("File size cannot be more than 100 MB.");
+            if (dto.File.Length > FileRules.MaxFileSizeBytes)
+                throw new ArgumentException(
+                    $"File size cannot be more than {FileRules.MaxFileSizeBytes / (1024 * 1024)} MB.");
 
-            var originalName = Path.GetFileName(dto.File.FileName);
-            var extension = Path.GetExtension(originalName);
+            var originalName = FileRules.SanitizeFileName(dto.File.FileName);
+            var extension = Path.GetExtension(originalName).ToLowerInvariant();
+
+            if (!FileRules.IsAllowedExtension(extension))
+                throw new ArgumentException(
+                    $"This file type is not allowed. Allowed types: {string.Join(", ", FileRules.AllowedExtensions.Order())}.");
+
+            // The extension must match what is really inside the file (a renamed program is not a picture).
+            var header = new byte[FileRules.HeaderLength];
+            int read;
+            using (var headerStream = dto.File.OpenReadStream())
+            {
+                read = await headerStream.ReadAtLeastAsync(header, header.Length, throwOnEndOfStream: false);
+            }
+
+            if (!FileRules.ContentMatches(extension, header, read))
+                throw new ArgumentException("The file content does not match its extension.");
+
             var storedName = Guid.NewGuid() + extension;
 
             string fileUrl;
@@ -44,9 +60,7 @@ namespace alealamia.Application.Services
                 OriginalFileName = originalName,
                 StoredFileName = storedName,
                 FileUrl = fileUrl,
-                ContentType = string.IsNullOrWhiteSpace(dto.File.ContentType)
-                    ? "application/octet-stream"
-                    : dto.File.ContentType,
+                ContentType = FileRules.ContentTypeFor(extension)!,
                 SizeInBytes = dto.File.Length,
                 UploadedByUserId = uploadedByUserId,
                 UploadedAt = DateTime.UtcNow
@@ -71,6 +85,26 @@ namespace alealamia.Application.Services
                 ContentType = file.ContentType,
                 SizeInBytes = file.SizeInBytes,
                 UploadedAt = file.UploadedAt
+            };
+        }
+
+        public async Task<FileContentDto?> OpenAsync(int id)
+        {
+            var file = await _unitOfWork.FileRepository.GetByIdAsync(id);
+
+            if (file == null)
+                return null;
+
+            var content = _fileStorage.OpenRead(file.StoredFileName);
+
+            if (content == null)
+                return null;
+
+            return new FileContentDto
+            {
+                Content = content,
+                ContentType = file.ContentType,
+                FileName = file.OriginalFileName
             };
         }
 

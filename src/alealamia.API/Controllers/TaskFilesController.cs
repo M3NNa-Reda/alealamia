@@ -51,6 +51,38 @@ public class TaskFilesController : ControllerBase
     }
 
     /// <summary>
+    /// Downloads a file attached to the task. Same access rules as the file list: admins for any task, a freelancer
+    /// only for a task assigned or offered to them. The file is always sent as an attachment, never rendered.
+    /// </summary>
+    [HttpGet("{fileId:int}/download")]
+    public async Task<IActionResult> Download(int taskId, int fileId)
+    {
+        var task = await _taskService.GetDetailsAsync(taskId);
+        if (task is null)
+            return NotFound();
+
+        if (User.IsInRole(AppRoles.Freelancer))
+        {
+            var me = await _freelancerProfileService.GetApprovedFreelancerAsync(User);
+            var related = task.AssignedFreelancerId == me.Id
+                || await _offerService.HasOfferAsync(taskId, me.Id);
+
+            if (!related)
+                return NotFound();
+        }
+
+        var attached = (await _taskService.GetFilesAsync(taskId)).Any(f => f.FileId == fileId);
+        if (!attached)
+            return NotFound();
+
+        var content = await _fileService.OpenAsync(fileId);
+        if (content is null)
+            return NotFound();
+
+        return File(content.Content, content.ContentType, content.FileName);
+    }
+
+    /// <summary>
     /// Attaches an already uploaded file to the task. A freelancer may do this only for the task
     /// assigned to them and only with a file they uploaded themselves.
     /// </summary>

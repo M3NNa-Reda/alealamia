@@ -16,9 +16,20 @@ namespace alealamia.API.Security
         public int WindowSeconds { get; set; } = 60;
     }
 
+    /// <summary>Limits for file uploads, per client IP address (the limiter runs before authentication).</summary>
+    public sealed class UploadRateLimitOptions
+    {
+        public const string SectionName = "RateLimiting:Upload";
+
+        public int PermitLimit { get; set; } = 20;
+
+        public int WindowSeconds { get; set; } = 60;
+    }
+
     public static class RateLimitingExtensions
     {
         public const string AuthPolicy = "auth";
+        public const string UploadPolicy = "upload";
 
         public static IServiceCollection AddApiRateLimiting(this IServiceCollection services)
         {
@@ -28,13 +39,20 @@ namespace alealamia.API.Security
                     $"{AuthRateLimitOptions.SectionName}: PermitLimit and WindowSeconds must be greater than zero.")
                 .ValidateOnStart();
 
+            services.AddOptions<UploadRateLimitOptions>()
+                .BindConfiguration(UploadRateLimitOptions.SectionName)
+                .Validate(o => o.PermitLimit > 0 && o.WindowSeconds > 0,
+                    $"{UploadRateLimitOptions.SectionName}: PermitLimit and WindowSeconds must be greater than zero.")
+                .ValidateOnStart();
+
             services.AddRateLimiter(_ => { });
 
             // Configured through options so the limits are read when the host is built (and can be overridden per environment).
             services.AddOptions<RateLimiterOptions>()
-                .Configure<IOptions<AuthRateLimitOptions>>((limiter, auth) =>
+                .Configure<IOptions<AuthRateLimitOptions>, IOptions<UploadRateLimitOptions>>((limiter, auth, upload) =>
                 {
                     var settings = auth.Value;
+                    var uploadSettings = upload.Value;
 
                     limiter.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
@@ -45,6 +63,16 @@ namespace alealamia.API.Security
                             {
                                 PermitLimit = settings.PermitLimit,
                                 Window = TimeSpan.FromSeconds(settings.WindowSeconds),
+                                QueueLimit = 0
+                            }));
+
+                    limiter.AddPolicy(UploadPolicy, context =>
+                        RateLimitPartition.GetFixedWindowLimiter(
+                            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                            _ => new FixedWindowRateLimiterOptions
+                            {
+                                PermitLimit = uploadSettings.PermitLimit,
+                                Window = TimeSpan.FromSeconds(uploadSettings.WindowSeconds),
                                 QueueLimit = 0
                             }));
 

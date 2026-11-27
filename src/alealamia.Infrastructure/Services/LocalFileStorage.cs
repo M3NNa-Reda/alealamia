@@ -1,4 +1,4 @@
-﻿using alealamia.Application.Interfaces.Services;
+using alealamia.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Hosting;
 
 namespace alealamia.Infrastructure.Services
@@ -27,6 +27,15 @@ namespace alealamia.Infrastructure.Services
             return "/uploads/" + storedFileName;
         }
 
+        public Stream? OpenRead(string storedFileName)
+        {
+            var path = Path.Combine(_uploadsPath, Path.GetFileName(storedFileName));
+
+            return System.IO.File.Exists(path)
+                ? new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read)
+                : null;
+        }
+
         public Task DeleteAsync(string storedFileName)
         {
             var path = Path.Combine(_uploadsPath, Path.GetFileName(storedFileName));
@@ -37,5 +46,4 @@ namespace alealamia.Infrastructure.Services
             return Task.CompletedTask;
         }
     }
-
 }
